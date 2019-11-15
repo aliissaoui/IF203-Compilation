@@ -14,6 +14,8 @@ void yyerror (char* s) {
   
 }
 
+int reg_count=0;
+
 %}
 
 %union { 
@@ -38,7 +40,8 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename aff
+%type <val> exp vir vlist typename aff var_decl type
+
 
 %start prog  
 
@@ -92,11 +95,14 @@ fun_head : ID PO PF            {}
 params: type ID vir params     {}
 | type ID                      {}
 
-vlist: ID vir vlist            {}
-| ID                           {$$->name=$<val>0; printf("TYPE IS: %s", $$->name);} //teacher wrote : egale a l'attribut de type
+vlist: ID vir vlist            { $$=new_attribute();}
+| ID                           { $$=new_attribute(); 
+                                  $$->type_val=$<val>0; //teacher wrote : egale a l'attribut de type
+                                  $$->name = $1; 
+                                  printf("%s", yylval.val -> name);}
 ;
 
-vir : VIR                      {$$=$<val>-1;}
+vir : VIR                      { $$=$<val>-1;}
 ;
 
 fun_body : AO block AF         {}
@@ -109,9 +115,19 @@ type
 ;
 
 typename
-: TINT                          {$$=new_attribute(); $$->type_val=TINT;}
-| TFLOAT                        {$$=new_attribute(); $$->type_val=TFLOAT;}
-| VOID                          {$$=new_attribute(); $$->type_val=VOID;}
+
+: TINT                          { $$=new_attribute();
+                                  printf("typename-> TINT\n");
+                                  $$->type_val=TINT;}
+
+| TFLOAT                        { $$=new_attribute();
+                                  printf("typename-> TFLOAT\n");
+                                  $$->type_val=TFLOAT;}
+
+| VOID                          { $$=new_attribute();
+                                  printf("typename-> VOID\n");
+                                  $$->type_val=VOID;}
+
 | STRUCT ID                     {}
 ;
 
@@ -140,7 +156,7 @@ inst:
 
 // II.1 Affectations
 
-aff : ID EQ exp               {}
+aff : ID EQ exp               {printf("%s = ri%d;\n", $1->name, $3->reg_number);}
 | exp STAR EQ exp             {}
 ;
 
@@ -181,14 +197,35 @@ while : WHILE                 {}
 exp
 // II.3.0 Exp. arithmetiques
 : MOINS exp %prec UNA         {}
-| exp PLUS exp                {$$=plus_attribute($1,$3);}
-| exp MOINS exp               {$$=minus_attribute($1,$3);}
-| exp STAR exp                {$$=mult_attribute($1,$3);}
-| exp DIV exp                 {$$=div_attribute($1,$3);}
-| PO exp PF                   {$$=$2;}
-| ID                          {$$->name=$1;}
-| NUMI                        {$$->int_val=$1;}
-| NUMF                        {$$->float_val=$1;}
+| exp PLUS exp                { $$=plus_attribute($1,$3);
+                                $$->reg_number = reg_count++;
+                                printf( "ri%d = ri%d + ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+| exp MOINS exp               { $$=minus_attribute($1,$3);
+                                $$->reg_number = reg_count++;
+                                printf( "ri%d = ri%d - ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+| exp STAR exp                { $$=mult_attribute($1,$3);
+                                $$->reg_number = reg_count++;
+                                printf( "ri%d = ri%d * ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+| exp DIV exp                 { $$=div_attribute($1,$3);
+                                $$->reg_number = reg_count++;
+                                printf( "ri%d = ri%d / ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+| PO exp PF                   { $$=new_attribute();
+                                $$->reg_number = reg_count++;
+                                $$ = $2;
+                                printf( "(ri%d);\n", $$->reg_number);}
+| ID                          { $$=new_attribute(); 
+                                $$->reg_number = reg_count++;
+                                $$->name=$1; printf("ri%d = %s;\n", $$->reg_number, yylval.val->name);}
+| NUMI                        { $$=new_attribute();
+                                $$->reg_number = reg_count++;
+                                $$->type_val = TINT;
+                                $$->int_val = yylval.val -> int_val;
+                                printf("ri%d = %d;\n", $$->reg_number, yylval.val -> int_val);}
+| NUMF                        { $$=new_attribute();
+                                $$->reg_number = reg_count++;
+                                $$->type_val = TFLOAT;
+                                $$->float_val = yylval.val -> float_val;
+                                printf("ri%d = %f;\n", $$->reg_number, yylval.val -> float_val);}
 
 // II.3.1 Déréférencement
 
@@ -197,12 +234,12 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 {$1 < $3; printf("%i < %i;", $1 -> int_val, $3 -> int_val);}
-| exp SUP exp                 {$1 > $3; printf("%i > %i;", $1 -> int_val, $3 -> int_val);}
-| exp EQUAL exp               {$1 == $3; printf("%i == %i;", $1 -> int_val, $3 -> int_val);}
-| exp DIFF exp                {$1 != $3; printf("%i != %i;", $1 -> int_val, $3 -> int_val);}
-| exp AND exp                 {$1 && $3; printf("%i && %i;", $1 -> int_val, $3 -> int_val);}
-| exp OR exp                  {$1 || $3; printf("%i || %i;", $1 -> int_val, $3 -> int_val);}
+| exp INF exp                 {$1 < $3; printf("exp-> exp INF exp: %i < %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp SUP exp                 {$1 > $3; printf("exp-> exp SUP exp: %i > %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp EQUAL exp               {$1 == $3; printf("exp-> exp EQUAL exp: %i == %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp DIFF exp                {$1 != $3; printf("exp-> exp DIFF exp: %i != %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp AND exp                 {$1 && $3; printf("exp-> exp AND exp: %i && %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp OR exp                  {$1 || $3; printf("exp-> exp OR exp: %i || %i;\n", $1 -> int_val, $3 -> int_val);}
 
 // II.3.3. Structures
 
@@ -226,6 +263,8 @@ arglist : exp VIR arglist     {}
 %%
 
 int main () {
-  printf ("? "); return yyparse ();
+  printf ("? "); 
+  return yyparse ();
+
 } 
 

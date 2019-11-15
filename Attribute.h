@@ -26,6 +26,8 @@ struct ATTRIBUTE {
 
 typedef struct ATTRIBUTE * attribute;
 
+
+
 attribute new_attribute ();
 /* returns the pointeur to a newly allocated (but uninitialized) attribute value structure */
 
@@ -35,6 +37,7 @@ attribute mult_attribute(attribute x, attribute y);
 attribute minus_attribute(attribute x, attribute y);
 attribute div_attribute(attribute x, attribute y);
 attribute neg_attribute(attribute x);
+
 
 #endif
 
