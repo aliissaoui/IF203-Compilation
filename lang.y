@@ -54,7 +54,7 @@ decl_list inst_list            {}
 // I. Declarations
 
 decl_list : decl decl_list     {}
-|                              {}
+| decl                         {}
 ;
 
 decl: var_decl PV              {}
@@ -180,10 +180,10 @@ while : WHILE                 {}
 exp
 // II.3.0 Exp. arithmetiques
 : MOINS exp %prec UNA         {}
-| exp PLUS exp                {$$=$1+$3; printf("%i + %i", $1, $3);}
-| exp MOINS exp               {$$=$1-$3; printf("%i - %i", $1, $3);}
-| exp STAR exp                {$$=$1*$3; printf("%i * %i", $1, $3);}
-| exp DIV exp                 {$$=$1/$3; printf("%i / %i", $1, $3);}
+| exp PLUS exp                {$$=plus_attribute($1,$3);}
+| exp MOINS exp               {$$=minus_attribute($1,$3);}
+| exp STAR exp                {$$=mult_attribute($1,$3);}
+| exp DIV exp                 {$$=div_attribute($1,$3);}
 | PO exp PF                   {$$=$2;}
 | ID                          {$$=$1;}
 | NUMI                        {$$=$1;}
@@ -196,17 +196,17 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 {$1 < $3; printf("%i < %i", $1, $3);}
-| exp SUP exp                 {$1 > $3; printf("%i > %i", $1, $3);}
-| exp EQUAL exp               {$1 == $3; printf("%i == %i", $1, $3);}
-| exp DIFF exp                {$1 != $3; printf("%i != %i", $1, $3);}
-| exp AND exp                 {$1 && $3; printf("%i && %i", $1, $3);}
-| exp OR exp                  {$1 || $3; printf("%i || %i", $1, $3);}
+| exp INF exp                 {$1 < $3; printf("%i < %i", $1 -> int_val, $3 -> int_val);}
+| exp SUP exp                 {$1 > $3; printf("%i > %i", $1 -> int_val, $3 -> int_val);}
+| exp EQUAL exp               {$1 == $3; printf("%i == %i", $1 -> int_val, $3 -> int_val);}
+| exp DIFF exp                {$1 != $3; printf("%i != %i", $1 -> int_val, $3 -> int_val);}
+| exp AND exp                 {$1 && $3; printf("%i && %i", $1 -> int_val, $3 -> int_val);}
+| exp OR exp                  {$1 || $3; printf("%i || %i", $1 -> int_val, $3 -> int_val);}
 
 // II.3.3. Structures
 
-| exp ARR ID                  {$$ = $1->$3; printf("%i = %i->%i", $$, $1, $3 );}
-| exp DOT ID                  {$$ = $1.$3; printf("%i = %i.%i", $$, $1, $3 );}
+| exp ARR ID                  {}
+| exp DOT ID                  {}
 
 | app                         {}
 ;
