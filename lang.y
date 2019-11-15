@@ -39,6 +39,7 @@ void yyerror (char* s) {
 %nonassoc UNA                  // highest priority on unary operator
  
 %type <val> exp
+%type <val> vir
 
 %start prog  
 
@@ -55,6 +56,7 @@ decl_list inst_list            {}
 
 decl_list : decl decl_list     {}
 | decl                         {}
+|                              {}
 ;
 
 decl: var_decl PV              {}
@@ -92,10 +94,10 @@ params: type ID vir params     {}
 | type ID                      {}
 
 vlist: ID vir vlist            {}
-| ID                           {}
+| ID                           {$<val>0;} // teacher wrote : egale a l'attribut de type
 ;
 
-vir : VIR                      {}
+vir : VIR                      {$$=$<val>-1;}
 ;
 
 fun_body : AO block AF         {}
