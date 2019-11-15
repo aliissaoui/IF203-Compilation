@@ -38,8 +38,7 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp
-%type <val> vir
+%type <val> exp vir vlist typename
 
 %start prog  
 
@@ -94,7 +93,7 @@ params: type ID vir params     {}
 | type ID                      {}
 
 vlist: ID vir vlist            {}
-| ID                           {$<val>0;} // teacher wrote : egale a l'attribut de type
+| ID                           {$$->name=$<val>0; printf("TYPE IS: %s", $$->name);} //teacher wrote : egale a l'attribut de type
 ;
 
 vir : VIR                      {$$=$<val>-1;}
@@ -110,9 +109,9 @@ type
 ;
 
 typename
-: TINT                          {}
-| TFLOAT                        {}
-| VOID                          {}
+: TINT                          {$$=new_attribute(); $$->type_val=TINT;}
+| TFLOAT                        {$$=new_attribute(); $$->type_val=TFLOAT;}
+| VOID                          {$$=new_attribute(); $$->type_val=VOID;}
 | STRUCT ID                     {}
 ;
 
