@@ -38,7 +38,7 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename
+%type <val> exp vir vlist typename aff
 
 %start prog  
 
@@ -128,8 +128,8 @@ inst_list: inst PV inst_list   {}
 ;
 
 inst:
-exp                           {}
-| AO block AF                 {}
+  
+  AO block AF                 {}
 | aff                         {}
 | ret                         {}
 | cond                        {}
@@ -141,7 +141,7 @@ exp                           {}
 // II.1 Affectations
 
 aff : ID EQ exp               {}
-| exp STAR EQ exp
+| exp STAR EQ exp             {}
 ;
 
 
@@ -186,9 +186,9 @@ exp
 | exp STAR exp                {$$=mult_attribute($1,$3);}
 | exp DIV exp                 {$$=div_attribute($1,$3);}
 | PO exp PF                   {$$=$2;}
-| ID                          {$$=$1;}
-| NUMI                        {$$=$1;}
-| NUMF                        {$$=$1;}
+| ID                          {$$->name=$1;}
+| NUMI                        {$$->int_val=$1;}
+| NUMF                        {$$->float_val=$1;}
 
 // II.3.1 Déréférencement
 
@@ -197,12 +197,12 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 {$1 < $3; printf("%i < %i", $1 -> int_val, $3 -> int_val);}
-| exp SUP exp                 {$1 > $3; printf("%i > %i", $1 -> int_val, $3 -> int_val);}
-| exp EQUAL exp               {$1 == $3; printf("%i == %i", $1 -> int_val, $3 -> int_val);}
-| exp DIFF exp                {$1 != $3; printf("%i != %i", $1 -> int_val, $3 -> int_val);}
-| exp AND exp                 {$1 && $3; printf("%i && %i", $1 -> int_val, $3 -> int_val);}
-| exp OR exp                  {$1 || $3; printf("%i || %i", $1 -> int_val, $3 -> int_val);}
+| exp INF exp                 {$1 < $3; printf("%i < %i;", $1 -> int_val, $3 -> int_val);}
+| exp SUP exp                 {$1 > $3; printf("%i > %i;", $1 -> int_val, $3 -> int_val);}
+| exp EQUAL exp               {$1 == $3; printf("%i == %i;", $1 -> int_val, $3 -> int_val);}
+| exp DIFF exp                {$1 != $3; printf("%i != %i;", $1 -> int_val, $3 -> int_val);}
+| exp AND exp                 {$1 && $3; printf("%i && %i;", $1 -> int_val, $3 -> int_val);}
+| exp OR exp                  {$1 || $3; printf("%i || %i;", $1 -> int_val, $3 -> int_val);}
 
 // II.3.3. Structures
 
