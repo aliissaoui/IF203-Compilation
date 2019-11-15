@@ -4,7 +4,6 @@
  }
 
 %{
-
 #include <stdio.h>
   
 extern int yylex();
@@ -14,7 +13,6 @@ void yyerror (char* s) {
   printf ("%s\n",s);
   
 }
-		
 
 %}
 
@@ -40,12 +38,12 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
+%type <val> exp
+
 %start prog  
- 
 
 
 %%
-
 prog : block                   {}
 ;
 
@@ -182,14 +180,14 @@ while : WHILE                 {}
 exp
 // II.3.0 Exp. arithmetiques
 : MOINS exp %prec UNA         {}
-| exp PLUS exp                {}
-| exp MOINS exp               {}
-| exp STAR exp                {}
-| exp DIV exp                 {}
-| PO exp PF                   {}
-| ID                          {}
-| NUMI                        {}
-| NUMF                        {}
+| exp PLUS exp                {$$=$1+$3; printf("%i + %i", $1, $3);}
+| exp MOINS exp               {$$=$1-$3; printf("%i - %i", $1, $3);}
+| exp STAR exp                {$$=$1*$3; printf("%i * %i", $1, $3);}
+| exp DIV exp                 {$$=$1/$3; printf("%i / %i", $1, $3);}
+| PO exp PF                   {$$=$2;}
+| ID                          {$$=$1;}
+| NUMI                        {$$=$1;}
+| NUMF                        {$$=$1;}
 
 // II.3.1 Déréférencement
 
@@ -198,17 +196,17 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 {}
-| exp SUP exp                 {}
-| exp EQUAL exp               {}
-| exp DIFF exp                {}
-| exp AND exp                 {}
-| exp OR exp                  {}
+| exp INF exp                 {$1 < $3; printf("%i < %i", $1, $3);}
+| exp SUP exp                 {$1 > $3; printf("%i > %i", $1, $3);}
+| exp EQUAL exp               {$1 == $3; printf("%i == %i", $1, $3);}
+| exp DIFF exp                {$1 != $3; printf("%i != %i", $1, $3);}
+| exp AND exp                 {$1 && $3; printf("%i && %i", $1, $3);}
+| exp OR exp                  {$1 || $3; printf("%i || %i", $1, $3);}
 
 // II.3.3. Structures
 
-| exp ARR ID                  {}
-| exp DOT ID                  {}
+| exp ARR ID                  {$$ = $1->$3; printf("%i = %i->%i", $$, $1, $3 );}
+| exp DOT ID                  {$$ = $1.$3; printf("%i = %i.%i", $$, $1, $3 );}
 
 | app                         {}
 ;
@@ -224,11 +222,9 @@ args :  arglist               {}
 arglist : exp VIR arglist     {}
 | exp                         {}
 ;
+%%
 
-
-
-%% 
 int main () {
-printf ("? "); return yyparse ();
+  printf ("? "); return yyparse ();
 } 
 
