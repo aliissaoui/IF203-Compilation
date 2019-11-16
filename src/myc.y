@@ -154,7 +154,9 @@ inst:
 
 // II.1 Affectations
 
-aff : ID EQ exp               {printf("%s = ri%d;\n", $1->name, $3->reg_number);}
+aff : ID EQ exp               {printf("%s = ri%d;\n", $1->name, $3->reg_number);
+                               printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
+}
 | exp STAR EQ exp             {}
 ;
 
@@ -217,13 +219,19 @@ exp
 | PO exp PF                   { $$ = $2;
                                 printf("( %s )", $$->name);
                                 }
-| ID                          { $$ = $1; 
-                                $$->name=$1; printf("ri%d = %s;\n", $$->reg_number, yylval.val -> name);}
+                                
+| ID                          { $$ = $1;
+                                write_type($1->type_val);
+                                printf("ri%d;\n", $$->reg_number);                                
+                                printf("ri%d = %s;\n", $$->reg_number, yylval.val -> name);
+                                }
 
 | NUMI                        { $$=$1;
+                                printf("int ri%d;\n", $$->reg_number);
                                 printf("ri%d = %d;\n", $$->reg_number, $$->int_val);}
 
 | NUMF                        { $$=$1;
+                                printf("float ri%d;\n", $$->reg_number);
                                 printf("ri%d = %f;\n", $$->reg_number, $$->float_val);}
 
 // II.3.1 Déréférencement

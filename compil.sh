@@ -3,9 +3,9 @@
 
 
 echo "#include <stdio.h>
-#include \"tst/test.h\"
+#include \"test.h\"
 
-void main(){
+int main(){
 " > tst/test.c
 
 echo "#ifndef TEST_H
@@ -13,14 +13,15 @@ echo "#ifndef TEST_H
 " > tst/test.h
 
 
-grep int tmp.txt >> tst/test.h
-grep float tmp.txt >> tst/test.h
-grep void tmp.txt >> tst/test.h
-grep -v float tmp.txt | grep -v int | grep -v void >> tst/test.c
+grep -w int tmp.txt >> tst/test.h
+grep -w float tmp.txt >> tst/test.h
+grep -w void tmp.txt >> tst/test.h
+grep -v -w float tmp.txt | grep -v -w int | grep -v -w void >> tst/test.c
 
 
 echo "
+return 0;
 }" >> tst/test.c
 echo "
-#endif TEST_H" >> tst/test.h
+#endif" >> tst/test.h
 rm tmp.txt
