@@ -2,9 +2,9 @@
 /* avoid dependency with library fl */
 
 %{ 
-#include "y.tab.h"
-#include "Table_des_symboles.h"
-#include "Attribute.h"
+#include "myc.tab.h"
+#include "src/Table_des_symboles.h"
+#include "src/Attribute.h"
 #include <stdio.h>
 
 %} 
@@ -59,3 +59,4 @@
                            yylval.val -> name = string_to_sid(yytext);
 		           return ID; }
 [ \t\n]                   { /* on avale sans rendre la main */; }
+

@@ -46,3 +46,9 @@ attribute neg_attribute(attribute x){
   return r;
 };
 
+void write_type(type t){
+  if ( t == INT )
+    printf("int ");
+  else if ( t == FLOAT)
+    printf("float ");
+}

@@ -1,20 +1,21 @@
 %code requires{
-#include "Table_des_symboles.h"
-#include "Attribute.h"
+#include "src/Table_des_symboles.h"
+#include "src/Attribute.h"
  }
 
 %{
 #include <stdio.h>
-  
+#include "src/Attribute.h"
+
 extern int yylex();
 extern int yyparse();
 
 void yyerror (char* s) {
   printf ("%s\n",s);
-  
 }
 
 int reg_count=0;
+type current_type;
 
 %}
 
@@ -32,6 +33,8 @@ int reg_count=0;
 %token PLUS MOINS STAR DIV
 %token DOT ARR
 
+%token END
+
 %left DIFF EQUAL SUP INF       // low priority on comparison
 %left PLUS MOINS               // higher priority on + - 
 %left STAR DIV                 // higher priority on * /
@@ -47,7 +50,9 @@ int reg_count=0;
 
 
 %%
-prog : block                   {}
+
+
+prog : block                  {}
 ;
 
 block:
@@ -58,7 +63,7 @@ decl_list inst_list            {}
 
 decl_list : decl decl_list     {}
 | decl                         {}
-|                              {}
+|                              {} // we needed to add it to recognize file end.
 ;
 
 decl: var_decl PV              {}
@@ -95,14 +100,11 @@ fun_head : ID PO PF            {}
 params: type ID vir params     {}
 | type ID                      {}
 
-vlist: ID vir vlist            { $$=new_attribute();}
-| ID                           { $$=new_attribute(); 
-                                  $$->type_val=$<val>0; //teacher wrote : egale a l'attribut de type
-                                  $$->name = $1; 
-                                  printf("%s", yylval.val -> name);}
+vlist: ID vir vlist            {}
+| ID                           {printf("%s;\n", $1 -> name);}
 ;
 
-vir : VIR                      { $$=$<val>-1;}
+vir : VIR                      {printf("VIR\n");$$=$<val>-1; printf(",");}
 ;
 
 fun_body : AO block AF         {}
@@ -116,17 +118,13 @@ type
 
 typename
 
-: TINT                          { $$=new_attribute();
-                                  printf("typename-> TINT\n");
-                                  $$->type_val=TINT;}
+: TINT                          { current_type = INT;
+                                  printf("int ");}
 
-| TFLOAT                        { $$=new_attribute();
-                                  printf("typename-> TFLOAT\n");
-                                  $$->type_val=TFLOAT;}
+| TFLOAT                        { current_type = FLOAT;
+                                  printf("float ");}
 
-| VOID                          { $$=new_attribute();
-                                  printf("typename-> VOID\n");
-                                  $$->type_val=VOID;}
+| VOID                          { current_type = TVOID;}
 
 | STRUCT ID                     {}
 ;
@@ -141,6 +139,7 @@ pointer
 
 inst_list: inst PV inst_list   {}
 | inst                         {}
+|                              {}
 ;
 
 inst:
@@ -168,8 +167,14 @@ ret : RETURN exp              {}
 
 // II.3. Conditionelles
 cond :
-if bool_cond inst             {}
-|  else inst                  {}
+if bool_cond stat else stat   {}
+|  if bool_cond stat          {}
+;
+
+stat:
+AO block AF                   {}
+;
+
 ;
 
 
@@ -220,11 +225,13 @@ exp
                                 $$->reg_number = reg_count++;
                                 $$->type_val = TINT;
                                 $$->int_val = yylval.val -> int_val;
+                                printf("int ri%d;\n", $$->reg_number);
                                 printf("ri%d = %d;\n", $$->reg_number, yylval.val -> int_val);}
 | NUMF                        { $$=new_attribute();
                                 $$->reg_number = reg_count++;
                                 $$->type_val = TFLOAT;
                                 $$->float_val = yylval.val -> float_val;
+                                printf("float ri%d;\n", $$->reg_number);
                                 printf("ri%d = %f;\n", $$->reg_number, yylval.val -> float_val);}
 
 // II.3.1 Déréférencement
@@ -234,12 +241,30 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 {$1 < $3; printf("exp-> exp INF exp: %i < %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp SUP exp                 {$1 > $3; printf("exp-> exp SUP exp: %i > %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp EQUAL exp               {$1 == $3; printf("exp-> exp EQUAL exp: %i == %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp DIFF exp                {$1 != $3; printf("exp-> exp DIFF exp: %i != %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp AND exp                 {$1 && $3; printf("exp-> exp AND exp: %i && %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp OR exp                  {$1 || $3; printf("exp-> exp OR exp: %i || %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp INF exp                 { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $$ = $1 < $3;
+                                printf("exp-> exp INF exp: %i < %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp SUP exp                 { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $1 > $3;
+                                printf("exp-> exp SUP exp: %i > %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp EQUAL exp               { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $1 == $3;
+                                printf("exp-> exp EQUAL exp: %i == %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp DIFF exp                { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $1 != $3;
+                                printf("exp-> exp DIFF exp: %i != %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp AND exp                 { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $1 && $3;
+                                printf("exp-> exp AND exp: %i && %i;\n", $1 -> int_val, $3 -> int_val);}
+| exp OR exp                  { $$ = new_attribute();
+                                $$->reg_number = reg_count++;
+                                $1 || $3;
+                                printf("exp-> exp OR exp: %i || %i;\n", $1 -> int_val, $3 -> int_val);}
 
 // II.3.3. Structures
 
@@ -263,7 +288,6 @@ arglist : exp VIR arglist     {}
 %%
 
 int main () {
-  printf ("? "); 
   return yyparse ();
 
 } 

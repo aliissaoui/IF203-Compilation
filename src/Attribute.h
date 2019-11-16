@@ -11,7 +11,7 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-typedef enum {INT, FLOAT} type;
+typedef enum {INT, FLOAT, TVOID} type;
 
 struct ATTRIBUTE {
   char * name;
@@ -38,6 +38,7 @@ attribute minus_attribute(attribute x, attribute y);
 attribute div_attribute(attribute x, attribute y);
 attribute neg_attribute(attribute x);
 
+void write_type(type t);
 
 #endif
 
