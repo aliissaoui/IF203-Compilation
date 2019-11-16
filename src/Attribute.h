@@ -28,7 +28,7 @@ typedef struct ATTRIBUTE * attribute;
 
 
 
-attribute new_attribute ();
+attribute new_attribute (type t);
 /* returns the pointeur to a newly allocated (but uninitialized) attribute value structure */
 
 
