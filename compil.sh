@@ -15,7 +15,7 @@ echo "#ifndef TEST_H
 
 grep -w int tmp.txt >> tst/test.h
 grep -w float tmp.txt >> tst/test.h
-grep -w void tmp.txt >> tst/test.h
+grep -w void tmp.txt >> tst/test.h #| sed 
 grep -v -w float tmp.txt | grep -v -w int | grep -v -w void >> tst/test.c
 
 

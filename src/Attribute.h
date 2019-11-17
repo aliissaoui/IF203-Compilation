@@ -21,9 +21,8 @@ struct ATTRIBUTE {
   int reg_number;
   
   /* other attribute's fields can goes here */ 
-  int bool;
-  int label;
-  
+  int _else;
+
 };
 
 typedef struct ATTRIBUTE * attribute;
@@ -33,6 +32,9 @@ typedef struct ATTRIBUTE * attribute;
 attribute new_attribute ();
 /* returns the pointeur to a newly allocated (but uninitialized) attribute value structure */
 
+int new_reg_num();
+int new_label();
+void write_type(type t);
 
 attribute plus_attribute(attribute x, attribute y);
 attribute mult_attribute(attribute x, attribute y);

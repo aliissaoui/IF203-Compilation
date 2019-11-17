@@ -15,7 +15,7 @@ void yyerror (char* s) {
 }
 
 type current_type;
-int lab_count=0;
+
 %}
 
 %union { 
@@ -40,7 +40,7 @@ int lab_count=0;
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else
+%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else while while_cond
 
 
 %start prog  
@@ -60,7 +60,7 @@ decl_list inst_list            {}
 
 decl_list : decl decl_list     {}
 | decl                         {}
-|                              {printf("l%d:\n", lab_count++);} // we needed to add it to recognize file end.
+|                              {} // we needed to add it to recognize file end.
 ;
 
 decl: var_decl PV              {}
@@ -97,7 +97,7 @@ fun_head : ID PO PF            {}
 params: type ID vir params     {}
 | type ID                      {}
 
-vlist: ID vir vlist            {  }
+vlist: ID vir vlist            { }
 | ID                           {  write_type(current_type);
                                   printf("%s;\n", $1 -> name);}
 ;
@@ -117,11 +117,11 @@ type
 
 typename
 
-: TINT                          { current_type = INT;}
+: TINT                          { current_type = INT; }
 
-| TFLOAT                        { current_type = FLOAT;}
+| TFLOAT                        { current_type = FLOAT; }
 
-| VOID                          { current_type = TVOID;}
+| VOID                          { current_type = TVOID; }
 
 | STRUCT ID                     {}
 ;
@@ -167,34 +167,46 @@ ret : RETURN exp              {}
 // II.3. Conditionelles
 
 cond :
-if bool_cond stat else stat   { printf("l%d:\n", lab_count++); }
-|  if bool_cond stat          { printf("l%d:\n", lab_count++); }
+if bool_cond stat else stat   { printf("l%d:\n", $3->int_val);}
+|  if bool_cond stat          { printf("l%d:\n", $3->int_val);}
 ;
 
 stat:
-AO block AF                   { printf("goto l%d;\n", lab_count);}
+AO block AF                   { if ( $<val>0->_else  == 0 ) {
+                                  $$ = new_attribute();
+                                  $$->int_val = new_label();
+                                  printf("goto l%d;\nl%d:\n", $$->int_val, $<val>0->int_val);
+                                }
+                              }   
 ;
 
 
 bool_cond : PO exp PF         { $$ = $2;
-                                printf("if ri%d goto l%d;\nif !ri%d goto l%d;\n", 
-                                $2->reg_number, lab_count, $2->reg_number, lab_count+1);}
+                                $$->int_val = new_label();
+                                $$ -> _else = 0;
+                                printf("if ( !ri%d ) goto l%d;\n", 
+                                $2->reg_number, $$->int_val);}
 ;
 
 if : IF                       {}
 ;
 
-else : ELSE                   {}
+else : ELSE                   { $$ = new_attribute();
+                                $$ -> _else = 1; }
 ;
 
 // II.4. Iterations
 
-loop : while while_cond inst  {}
+loop : while while_cond inst  { printf("goto l%d;\nl%d:\n", $1->int_val, $2->int_val);}
 ;
 
-while_cond : PO exp PF        {printf("l%d:\nif ri%d goto l%d");}
+while_cond : PO exp PF        { $$ = $2;                   
+                                $$ -> int_val = new_label();
+                                printf("if ( !ri%d ) goto l%d;\n", $$->reg_number, $$->int_val ); }
 
-while : WHILE                 {}
+while : WHILE                 { $$ = new_attribute();
+                                $$->int_val = new_label(); 
+                                printf("l%d:\n", $$->int_val);}
 ;
 
 
@@ -203,38 +215,28 @@ exp
 // II.3.0 Exp. arithmetiques
 : MOINS exp %prec UNA         {}
 
-| exp PLUS exp                { $$=plus_attribute($1,$3);
-                                printf( "ri%d = ri%d + ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
-                                }
+| exp PLUS exp                { $$=plus_attribute($1,$3); }
+| exp MOINS exp               { $$=minus_attribute($1,$3); }
+| exp STAR exp                { $$=mult_attribute($1,$3); }
+| exp DIV exp                 { $$=div_attribute($1,$3); }
 
-| exp MOINS exp               { $$=minus_attribute($1,$3);                     
-                                printf( "ri%d = ri%d - ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
-                                }
-
-| exp STAR exp                { $$=mult_attribute($1,$3);                            
-                                printf( "ri%d = ri%d * ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
-                                }
-
-| exp DIV exp                 { $$=div_attribute($1,$3);
-                                printf( "ri%d = ri%d / ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
-                                }
-
-| PO exp PF                   { $$ = $2;
-                                printf("( %s )", $$->name);
-                                }
+| PO exp PF                   { $$ = $2; }
                                 
 | ID                          { $$ = $1;
+                                $$->reg_number = new_reg_num();
                                 write_type($1->type_val);
                                 printf("ri%d;\n", $$->reg_number);                                
                                 printf("ri%d = %s;\n", $$->reg_number, yylval.val -> name);
                                 }
 
-| NUMI                        { $$=$1;
+| NUMI                        { $$ = $1;
+                                $$->reg_number = new_reg_num();
                                 printf("int ri%d;\n", $$->reg_number);
                                 printf("ri%d = %d;\n", $$->reg_number, $$->int_val);
                                 }
 
-| NUMF                        { $$=$1;
+| NUMF                        { $$ = $1;
+                                $$->reg_number = new_reg_num();
                                 printf("float ri%d;\n", $$->reg_number);
                                 printf("ri%d = %f;\n", $$->reg_number, $$->float_val);
                                 }
@@ -246,36 +248,12 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 { $$ = new_attribute();
-                                $$->bool = $1->int_val < $3->int_val;
-                                printf("ri%d = ri%d < ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
-
-| exp SUP exp                 { $$ = new_attribute();
-                                $$->bool = $1->int_val > $3->int_val;
-                                printf("ri%d = ri%d > ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
-
-| exp EQUAL exp               { $$ = new_attribute();
-                                
-                                $$->bool = $1->int_val == $3->int_val;
-                                printf("ri%d = ri%d == ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
-| exp DIFF exp                { $$ = new_attribute();
-                                
-                                $$->bool = $1->int_val != $3->int_val;
-                                printf("ri%d = ri%d != ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
-| exp AND exp                 { $$ = new_attribute();
-                                
-                                $$->bool = $1->bool && $3->bool;
-                                printf("ri%d = ri%d && ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
-| exp OR exp                  { $$ = new_attribute();
-                                
-                                $$->bool = $1->bool || $3->bool;
-                                printf("ri%d = ri%d || ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
-                                }
+| exp INF exp                 { $$ = inf_attribute($1, $3); }
+| exp SUP exp                 { $$ = sup_attribute($1, $3); }
+| exp EQUAL exp               { $$ = equal_attribute($1, $3); }
+| exp DIFF exp                { $$ = diff_attribute($1, $3); }
+| exp AND exp                 { $$ = and_attribute($1, $3); }
+| exp OR exp                  { $$ = or_attribute($1, $3); }
 
 // II.3.3. Structures
 
@@ -284,7 +262,7 @@ exp
 
 | app                         {}
 ;
-       
+
 // II.4 Applications de fonctions
 
 app : ID PO args PF;

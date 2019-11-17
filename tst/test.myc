@@ -1,6 +1,10 @@
 
-void main(){
-    int x;
-    x=5;
-    x = x+1;
+int a;
+int b;
+
+a = 2; b = 0;
+
+while( a != b ) {
+    b = b + 1;
 }
+
