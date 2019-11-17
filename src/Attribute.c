@@ -67,6 +67,39 @@ attribute neg_attribute(attribute x){
   return r;
 };
 
+attribute inf_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+attribute sup_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+attribute equal_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+attribute diff_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+attribute and_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+attribute or_attribute(attribute x, attribute y){
+  attribute r = new_attribute();
+  printf("\nint ri%d;\n", r->reg_number);
+};
+
+
+
+
 void write_type(type t){
   if ( t == INT )
     printf("int ");

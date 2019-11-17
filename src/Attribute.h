@@ -39,6 +39,12 @@ attribute mult_attribute(attribute x, attribute y);
 attribute minus_attribute(attribute x, attribute y);
 attribute div_attribute(attribute x, attribute y);
 attribute neg_attribute(attribute x);
+attribute inf_attribute(attribute x, attribute y);
+attribute sup_attribute(attribute x, attribute y);
+attribute equal_attribute(attribute x, attribute y);
+attribute diff_attribute(attribute x, attribute y);
+attribute and_attribute(attribute x, attribute y);
+attribute or_attribute(attribute x, attribute y);
 
 void write_type(type t);
 
