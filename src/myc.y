@@ -60,7 +60,7 @@ decl_list inst_list            {}
 
 decl_list : decl decl_list     {}
 | decl                         {}
-|                              {printf("l%d: \n", lab_count++);} // we needed to add it to recognize file end.
+|                              {printf("l%d:\n", lab_count++);} // we needed to add it to recognize file end.
 ;
 
 decl: var_decl PV              {}
@@ -152,9 +152,9 @@ inst:
 
 // II.1 Affectations
 
-aff : ID EQ exp               {printf("%s = ri%d;\n", $1->name, $3->reg_number);
-                               printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
-}
+aff : ID EQ exp               { printf("%s = ri%d;\n", $1->name, $3->reg_number);
+                                printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
+                                }
 | exp STAR EQ exp             {}
 ;
 
@@ -167,24 +167,24 @@ ret : RETURN exp              {}
 // II.3. Conditionelles
 
 cond :
-if bool_cond stat else stat   { $$ = $2; }
-|  if bool_cond stat          { $$ = $2; }
+if bool_cond stat else stat   { printf("l%d:\n", lab_count++); }
+|  if bool_cond stat          { printf("l%d:\n", lab_count++); }
 ;
 
 stat:
-AO block AF                   {}
+AO block AF                   { printf("goto l%d;\n", lab_count);}
 ;
 
 
 bool_cond : PO exp PF         { $$ = $2;
-                                printf("if ri%d goto l%d;\n", $2->reg_number, lab_count);}
+                                printf("if ri%d goto l%d;\nif !ri%d goto l%d;\n", 
+                                $2->reg_number, lab_count, $2->reg_number, lab_count+1);}
 ;
 
 if : IF                       {}
 ;
 
-else : ELSE                   { $$ = $<val>-1  ;
-                                printf("if !ri%d goto l%d;\n", $$->reg_number,lab_count);}
+else : ELSE                   {}
 ;
 
 // II.4. Iterations
@@ -192,7 +192,7 @@ else : ELSE                   { $$ = $<val>-1  ;
 loop : while while_cond inst  {}
 ;
 
-while_cond : PO exp PF        {}
+while_cond : PO exp PF        {printf("l%d:\nif ri%d goto l%d");}
 
 while : WHILE                 {}
 ;
@@ -204,16 +204,20 @@ exp
 : MOINS exp %prec UNA         {}
 
 | exp PLUS exp                { $$=plus_attribute($1,$3);
-                                printf( "ri%d = ri%d + ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+                                printf( "ri%d = ri%d + ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
+                                }
 
 | exp MOINS exp               { $$=minus_attribute($1,$3);                     
-                                printf( "ri%d = ri%d - ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+                                printf( "ri%d = ri%d - ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
+                                }
 
 | exp STAR exp                { $$=mult_attribute($1,$3);                            
-                                printf( "ri%d = ri%d * ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+                                printf( "ri%d = ri%d * ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
+                                }
 
 | exp DIV exp                 { $$=div_attribute($1,$3);
-                                printf( "ri%d = ri%d / ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);}
+                                printf( "ri%d = ri%d / ri%d;\n", $$->reg_number, $1->reg_number, $3->reg_number);
+                                }
 
 | PO exp PF                   { $$ = $2;
                                 printf("( %s )", $$->name);
@@ -227,11 +231,13 @@ exp
 
 | NUMI                        { $$=$1;
                                 printf("int ri%d;\n", $$->reg_number);
-                                printf("ri%d = %d;\n", $$->reg_number, $$->int_val);}
+                                printf("ri%d = %d;\n", $$->reg_number, $$->int_val);
+                                }
 
 | NUMF                        { $$=$1;
                                 printf("float ri%d;\n", $$->reg_number);
-                                printf("ri%d = %f;\n", $$->reg_number, $$->float_val);}
+                                printf("ri%d = %f;\n", $$->reg_number, $$->float_val);
+                                }
 
 // II.3.1 Déréférencement
 
@@ -242,28 +248,34 @@ exp
 | NOT exp %prec UNA           {}
 | exp INF exp                 { $$ = new_attribute();
                                 $$->bool = $1->int_val < $3->int_val;
-                                printf("ri%d = ri%d < ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d < ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 
 | exp SUP exp                 { $$ = new_attribute();
                                 $$->bool = $1->int_val > $3->int_val;
-                                printf("ri%d = ri%d > ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d > ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 
 | exp EQUAL exp               { $$ = new_attribute();
                                 
                                 $$->bool = $1->int_val == $3->int_val;
-                                printf("ri%d = ri%d == ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d == ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 | exp DIFF exp                { $$ = new_attribute();
                                 
                                 $$->bool = $1->int_val != $3->int_val;
-                                printf("ri%d = ri%d != ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d != ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 | exp AND exp                 { $$ = new_attribute();
                                 
                                 $$->bool = $1->bool && $3->bool;
-                                printf("ri%d = ri%d && ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d && ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 | exp OR exp                  { $$ = new_attribute();
                                 
                                 $$->bool = $1->bool || $3->bool;
-                                printf("ri%d = ri%d || ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+                                printf("ri%d = ri%d || ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);
+                                }
 
 // II.3.3. Structures
 
