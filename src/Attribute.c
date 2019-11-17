@@ -6,13 +6,25 @@
 static int reg_count=0;
 
 
+pile p;
+
+
+void push(attribute x){
+  p.head++;
+  p.tab[p.head] = x;
+}
+
+attribute pop(){
+  p.head--;
+}
+
+
 attribute new_attribute () {
   attribute r;
   r  = malloc (sizeof (struct ATTRIBUTE));
   r->reg_number = reg_count++;
   return r;
 };
-
 
 attribute plus_attribute(attribute x, attribute y) {
   attribute r = new_attribute( );
