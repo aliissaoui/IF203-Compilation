@@ -21,7 +21,9 @@ struct ATTRIBUTE {
   int reg_number;
   
   /* other attribute's fields can goes here */ 
-
+  int bool;
+  int label;
+  
 };
 
 typedef struct ATTRIBUTE * attribute;

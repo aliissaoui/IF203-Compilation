@@ -5,6 +5,7 @@
 
 static int reg_count=0;
 
+
 attribute new_attribute () {
   attribute r;
   r  = malloc (sizeof (struct ATTRIBUTE));
@@ -20,7 +21,7 @@ attribute plus_attribute(attribute x, attribute y) {
     printf("ri%d;\n", r->reg_number);
   }
   else {
-    printf("float ri%d;\n", r->reg_number);
+    printf("\nfloat ri%d;\n", r->reg_number);
   }
   return r;
 };
@@ -28,14 +29,26 @@ attribute plus_attribute(attribute x, attribute y) {
 attribute mult_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   /* unconditionally adding integer values */
-  r -> int_val = x -> int_val * y -> int_val;
+  if ( x->type_val == y->type_val){
+    write_type(x->type_val);
+    printf("ri%d;\n", r->reg_number);
+  }
+  else {
+    printf("\nfloat ri%d;\n", r->reg_number);
+  }
   return r;
 };
 
 attribute minus_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   /* unconditionally adding integer values */
-  r -> int_val = x -> int_val - y -> int_val;
+  if ( x->type_val == y->type_val){
+    write_type(x->type_val);
+    printf("ri%d;\n", r->reg_number);
+  }
+  else {
+    printf("\nfloat ri%d;\n", r->reg_number);
+  }
   return r;
 };
 
@@ -50,6 +63,7 @@ attribute neg_attribute(attribute x){
   attribute r = new_attribute();
   /* unconditionally adding integer values */
   r -> int_val = -(x -> int_val);
+  printf("\nfloat ri%d;\n", r->reg_number);
   return r;
 };
 

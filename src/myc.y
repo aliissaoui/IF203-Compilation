@@ -15,7 +15,7 @@ void yyerror (char* s) {
 }
 
 type current_type;
-
+int lab_count=0;
 %}
 
 %union { 
@@ -32,8 +32,6 @@ type current_type;
 %token PLUS MOINS STAR DIV
 %token DOT ARR
 
-%token END
-
 %left DIFF EQUAL SUP INF       // low priority on comparison
 %left PLUS MOINS               // higher priority on + - 
 %left STAR DIV                 // higher priority on * /
@@ -42,7 +40,7 @@ type current_type;
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename aff var_decl type
+%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else
 
 
 %start prog  
@@ -62,7 +60,7 @@ decl_list inst_list            {}
 
 decl_list : decl decl_list     {}
 | decl                         {}
-|                              {} // we needed to add it to recognize file end.
+|                              {printf("l%d: \n", lab_count++);} // we needed to add it to recognize file end.
 ;
 
 decl: var_decl PV              {}
@@ -99,7 +97,7 @@ fun_head : ID PO PF            {}
 params: type ID vir params     {}
 | type ID                      {}
 
-vlist: ID vir vlist            {$$=$<val>-1;}
+vlist: ID vir vlist            {  }
 | ID                           {  write_type(current_type);
                                   printf("%s;\n", $1 -> name);}
 ;
@@ -167,25 +165,26 @@ ret : RETURN exp              {}
 ;
 
 // II.3. Conditionelles
+
 cond :
-if bool_cond stat else stat   {}
-|  if bool_cond stat          {}
+if bool_cond stat else stat   { $$ = $2; }
+|  if bool_cond stat          { $$ = $2; }
 ;
 
 stat:
 AO block AF                   {}
 ;
 
-;
 
-
-bool_cond : PO exp PF         {}
+bool_cond : PO exp PF         { $$ = $2;
+                                printf("if ri%d goto l%d;\n", $2->reg_number, lab_count);}
 ;
 
 if : IF                       {}
 ;
 
-else : ELSE                   {}
+else : ELSE                   { $$ = $<val>-1  ;
+                                printf("if !ri%d goto l%d;\n", $$->reg_number,lab_count);}
 ;
 
 // II.4. Iterations
@@ -241,30 +240,30 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 { printf("INF\n");$$ = new_attribute($1->type_val);
+| exp INF exp                 { $$ = new_attribute();
+                                $$->bool = $1->int_val < $3->int_val;
+                                printf("ri%d = ri%d < ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+
+| exp SUP exp                 { $$ = new_attribute();
+                                $$->bool = $1->int_val > $3->int_val;
+                                printf("ri%d = ri%d > ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+
+| exp EQUAL exp               { $$ = new_attribute();
                                 
-                                $$ = $1 < $3;
-                                printf("exp-> exp INF exp: %i < %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp SUP exp                 { printf("SUP\n");$$ = new_attribute($1->type_val);
+                                $$->bool = $1->int_val == $3->int_val;
+                                printf("ri%d = ri%d == ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+| exp DIFF exp                { $$ = new_attribute();
                                 
-                                $1 > $3;
-                                printf("exp-> exp SUP exp: %i > %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp EQUAL exp               { printf("EQUAL\n");$$ = new_attribute($1->type_val);
+                                $$->bool = $1->int_val != $3->int_val;
+                                printf("ri%d = ri%d != ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+| exp AND exp                 { $$ = new_attribute();
                                 
-                                $1 == $3;
-                                printf("exp-> exp EQUAL exp: %i == %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp DIFF exp                { printf("DIFF\n");$$ = new_attribute($1->type_val);
+                                $$->bool = $1->bool && $3->bool;
+                                printf("ri%d = ri%d && ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
+| exp OR exp                  { $$ = new_attribute();
                                 
-                                $1 != $3;
-                                printf("exp-> exp DIFF exp: %i != %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp AND exp                 { printf("AND\n");$$ = new_attribute($1->type_val);
-                                
-                                $1 && $3;
-                                printf("exp-> exp AND exp: %i && %i;\n", $1 -> int_val, $3 -> int_val);}
-| exp OR exp                  { printf("OR\n");$$ = new_attribute($1->type_val);
-                                
-                                $1 || $3;
-                                printf("exp-> exp OR exp: %i || %i;\n", $1 -> int_val, $3 -> int_val);}
+                                $$->bool = $1->bool || $3->bool;
+                                printf("ri%d = ri%d || ri%d;\n", $$->reg_number, $1 -> reg_number, $3 -> reg_number);}
 
 // II.3.3. Structures
 
