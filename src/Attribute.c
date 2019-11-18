@@ -7,26 +7,71 @@ int reg_count=0;
 int label_count=0;
 
 
-void initialise_pile(){
-  p.head = 0;
+void initialize_stack(stack s){
+  s.head = 0;
 }
 
-void push(attribute x){
-  p.head++;
-  p.tab[p.head] = x;
+void push(attribute x, stack s){
+  s.head++;
+  s.tab[s.head] = x;
 }
 
-attribute pop(){
-  attribute x = p.tab[p.head];
-  p.head--;
+attribute pop(stack s){
+  attribute x = s.tab[s.head];
+  s.head--;
   return x;
 }
 
-int is_empty_pile(){
-  if (p.head == 0)
+int is_empty(stack s){
+  if (s.head == 0)
     return 1;
   return 0;
 }
+
+int last_argument(stack s){
+  if (s.head == 1)
+    return 1;
+  return 0;
+}
+
+
+void initialize_vlist(){
+  initialize_stack(vlist_stack);
+}
+
+void push_vlist(attribute x){
+  push(x, vlist_stack);
+}
+
+attribute pop_vlist(){
+  pop(vlist_stack);
+}
+
+int is_empty_vlist(){
+  is_empty(vlist_stack);
+}
+
+
+void initialize_fun(){
+  initialize_stack(fun_stack);
+}
+
+void push_fun(attribute x){
+  push(x, fun_stack);
+}
+
+attribute pop_fun(){
+  pop(fun_stack);
+}
+
+int is_empty_fun(){
+  is_empty(fun_stack);
+}
+
+int last_argument_fun(){
+  last_argument(fun_stack);
+}
+
 
 
 attribute new_attribute () {

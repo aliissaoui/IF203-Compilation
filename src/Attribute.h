@@ -31,22 +31,42 @@ typedef struct ATTRIBUTE * attribute;
 
 
 
-struct PILE 
+struct STACK 
 {
   attribute tab[SIZE];
   int head;
 };
 
-typedef struct PILE  pile;
+typedef struct STACK  stack;
 
 
-pile p;
+stack vlist_stack;
+stack fun_stack;
 
 
-void initialise_pile();
-void push(attribute x);
-attribute pop();
-int is_empty_pile();
+
+void initialize_stack(stack s);
+void push(attribute x, stack s);
+attribute pop(stack s);
+int is_empty(stack s);
+int last_argument(stack s);
+
+
+void initialize_vlist();
+void push_vlist(attribute x);
+attribute pop_vlist();
+int is_empty_vlist();
+
+
+void initialize_fun();
+void push_fun(attribute x);
+attribute pop_fun();
+int is_empty_fun();
+int last_argument_fun();
+
+
+
+
 
 
 attribute new_attribute ();
