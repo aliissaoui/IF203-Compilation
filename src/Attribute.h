@@ -11,6 +11,8 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
+#define SIZE 15
+
 typedef enum {INT, FLOAT, TVOID} type;
 
 struct ATTRIBUTE {
@@ -27,6 +29,21 @@ struct ATTRIBUTE {
 
 typedef struct ATTRIBUTE * attribute;
 
+
+
+struct PILE 
+{
+  attribute tab[SIZE];
+  int head;
+};
+
+typedef struct PILE  pile;
+
+
+
+
+void push(attribute x);
+attribute pop();
 
 
 attribute new_attribute ();

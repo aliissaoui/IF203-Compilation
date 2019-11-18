@@ -7,6 +7,19 @@ int reg_count=0;
 int label_count=0;
 
 
+pile p;
+
+
+void push(attribute x){
+  p.head++;
+  p.tab[p.head] = x;
+}
+
+attribute pop(){
+  p.head--;
+}
+
+
 attribute new_attribute () {
   attribute r;
   r  = malloc (sizeof (struct ATTRIBUTE));
