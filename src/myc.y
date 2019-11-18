@@ -12,9 +12,7 @@ extern int yyparse();
 
 void yyerror (char* s) {
   printf ("%s\n",s);
-}
-
-type current_type;
+} 
 
 %}
 
@@ -69,9 +67,9 @@ decl: var_decl PV              {}
 ;
 
 // I.1. Variables
-var_decl : type vlist          {  while( !is_empty_pile() ){
-                                  write_type(current_type);
-                                  printf("%s;\n", pop()->name);}
+var_decl : type vlist          {  while( !is_empty_vlist() ){
+                                  write_type($1->type_val);
+                                  printf("%s;\n", pop_vlist()->name);}
                                 }
 ;
 
@@ -109,16 +107,15 @@ fun_head : ID PO PF            { }
 ;
 
 params: type ID vir params     { }
-| type ID                      { }
+| type ID                      {  }
 
-vlist: ID vir vlist            {}
-| ID                           {  initialise_pile();
-                                  push($1);
+vlist: ID vir vlist            {  push_vlist($1);}
+| ID                           {  initialize_vlist();
+                                  push_vlist($1);
                                 }
 ;
 
-vir : VIR                      {  write_type(current_type);
-                                  printf("%s;\n", $$->name);}
+vir : VIR                      { }
 ;
 
 fun_body : AO block AF         {}
@@ -132,11 +129,14 @@ type
 
 typename
 
-: TINT                          { current_type = INT; }
+: TINT                          { $$ = new_attribute();
+                                  $$->type_val = INT;}
 
-| TFLOAT                        { current_type = FLOAT; }
+| TFLOAT                        { $$ = new_attribute();
+                                  $$->type_val = FLOAT;}
 
-| VOID                          { current_type = TVOID; }
+| VOID                          { $$ = new_attribute();
+                                  $$->type_val = TVOID;}
 
 | STRUCT ID                     {}
 ;
