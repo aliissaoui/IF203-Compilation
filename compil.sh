@@ -13,11 +13,8 @@ echo "#ifndef TEST_H
 #define TEST_H
 " > tst/test.h
 
-
-grep -w int tmp.txt >> tst/test.h
-grep -w float tmp.txt >> tst/test.h
-grep -w void tmp.txt >> tst/test.h #| sed 
-grep -v -w float tmp.txt | grep -v -w int | grep -v -w void >> tst/test.c
+grep _.h_ tmp.txt | sed -e "s/_.h_//g" >> tst/test.h
+grep -v _.h_ tmp.txt >> tst/test.c
 
 
 echo "
