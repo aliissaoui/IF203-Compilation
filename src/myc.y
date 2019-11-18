@@ -69,7 +69,10 @@ decl: var_decl PV              {}
 ;
 
 // I.1. Variables
-var_decl : type vlist          {}
+var_decl : type vlist          { while( !is_empty_pile() ){
+                                  write_type(current_type);
+                                  printf("%s;\n", pop()->name);}
+                                }
 ;
 
 // I.2. Structures
@@ -97,9 +100,10 @@ fun_head : ID PO PF            {}
 params: type ID vir params     {}
 | type ID                      {}
 
-vlist: ID vir vlist            { }
-| ID                           {  write_type(current_type);
-                                  printf("%s;\n", $1 -> name);}
+vlist: ID vir vlist            { push($1); }
+| ID                           {  initialise_pile();
+                                  push($1);
+                                }
 ;
 
 vir : VIR                      {  write_type(current_type);

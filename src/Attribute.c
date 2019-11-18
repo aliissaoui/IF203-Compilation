@@ -7,7 +7,7 @@ int reg_count=0;
 int label_count=0;
 
 
-pile initialise_pile(){
+void initialise_pile(){
   p.head = 0;
 }
 
@@ -178,5 +178,4 @@ attribute or_attribute(attribute x, attribute y){
 
 
 // free registers
-// vlist (pile?)
 // header identification

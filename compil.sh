@@ -1,4 +1,5 @@
 #!/bin/bash
+make clean && make        
 ( ./myc < $1 ) > tmp.txt;
 
 
@@ -25,3 +26,4 @@ return 0;
 echo "
 #endif" >> tst/test.h
 rm tmp.txt
+gcc tst/test.c
