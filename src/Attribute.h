@@ -40,10 +40,13 @@ struct PILE
 typedef struct PILE  pile;
 
 
+pile p;
 
 
+pile initialise_pile();
 void push(attribute x);
 attribute pop();
+int is_empty_pile();
 
 
 attribute new_attribute ();

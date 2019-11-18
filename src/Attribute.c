@@ -7,8 +7,9 @@ int reg_count=0;
 int label_count=0;
 
 
-pile p;
-
+pile initialise_pile(){
+  p.head = 0;
+}
 
 void push(attribute x){
   p.head++;
@@ -16,7 +17,15 @@ void push(attribute x){
 }
 
 attribute pop(){
+  attribute x = p.tab[p.head];
   p.head--;
+  return x;
+}
+
+int is_empty_pile(){
+  if (p.head == 0)
+    return 1;
+  return 0;
 }
 
 
