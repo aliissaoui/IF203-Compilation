@@ -23,4 +23,3 @@ return 0;
 echo "
 #endif" >> tst/test.h
 rm tmp.txt
-gcc tst/test.c

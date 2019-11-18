@@ -38,7 +38,7 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else while while_cond
+%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else while while_cond fun_head params
 
 
 %start prog  
@@ -91,28 +91,31 @@ fun_decl : type fun            {}
 fun : fun_head fun_body        { } //printf("}\n");}
 ;
 
-fun_head : ID PO PF            { }
-                                  //  write_type(current_type);
-                                  // printf("%s(){\n", $1->name);}
-| ID PO params PF              { }
-                                  // write_type(current_type);
-                                  // printf("%s({\n", $1->name);
-                                  // while( !last_param() ){
-                                  //   write_type(current_type);
-                                  //   printf("%s, ", pop_param()->name);
-                                  // }
-                                  // write_type(current_type);
-                                  // printf("%s )", pop_param()->name);
-                                  // }
+fun_head : ID PO PF            { write_type($1->type_val);  // prob
+                                 printf("%s(){\n", $1->name);}
+| ID PO params PF              {  write_type($1->type_val);
+                                  printf("%s(\n", $1->name);
+                                  while( !last_argument_fun() ){
+                                    $$ = pop_fun();
+                                    write_type($$->type_val);
+                                    printf("%s, ", $$->name);
+                                  }
+                                  $$ = pop_fun();
+                                  write_type($$->type_val);
+                                  printf("%s ){\n", $$->name);
+                                }
 ;
 
-params: type ID vir params     { }
-| type ID                      {  }
+params: type ID vir params     { $$ = $1;
+                                 $2->type_val = $1->type_val;
+                                 push_fun($2); }
+| type ID                      { initialize_fun();
+                                 $2->type_val = $1->type_val;
+                                 push_fun($2); }
 
 vlist: ID vir vlist            {  push_vlist($1);}
 | ID                           {  initialize_vlist();
-                                  push_vlist($1);
-                                }
+                                  push_vlist($1); }
 ;
 
 vir : VIR                      { }
@@ -124,7 +127,7 @@ fun_body : AO block AF         {}
 // I.4. Types
 type
 : typename pointer             {}
-| typename                     {}
+| typename                     { $$ = $1;}
 ;
 
 typename
@@ -282,20 +285,18 @@ exp
 
 app : ID PO args PF;         
 
-args :  arglist               {}
-                              // printf("%s\(");
-                              //  while( !last_argument_fun ){        // a faire
-                              //  printf("%s, ", pop_fun()->name);
-                              //  }
-                              //  printf("%s );"), pop_fun()->name} // a faire
+args :  arglist               {
+                                printf("%s\(", $<val>-1->name );
+                                  while( !last_argument_fun() ){        // a faire
+                                  printf("%s, ", pop_fun()->name);
+                                }
+                                printf("%s )", pop_fun()->name);} // a faire
 |                             {}
 ;
 
-arglist : exp VIR arglist     {}
-                                // push_fun($1);}
-| exp                         {}
-                                // initialise_fun_pile();
-                                // push_fun($1);}
+arglist : exp VIR arglist     {push_fun($1);}
+| exp                         { initialize_fun();
+                                 push_fun($1);}
 ;
 %%
 

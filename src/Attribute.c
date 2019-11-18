@@ -6,70 +6,47 @@
 int reg_count=0;
 int label_count=0;
 
-
-void initialize_stack(stack s){
-  s.head = 0;
-}
-
-void push(attribute x, stack s){
-  s.head++;
-  s.tab[s.head] = x;
-}
-
-attribute pop(stack s){
-  attribute x = s.tab[s.head];
-  s.head--;
-  return x;
-}
-
-int is_empty(stack s){
-  if (s.head == 0)
-    return 1;
-  return 0;
-}
-
-int last_argument(stack s){
-  if (s.head == 1)
-    return 1;
-  return 0;
-}
-
-
 void initialize_vlist(){
-  initialize_stack(vlist_stack);
+  vlist_stack.head = 0;
 }
 
 void push_vlist(attribute x){
-  push(x, vlist_stack);
+  vlist_stack.head++;
+  vlist_stack.tab[vlist_stack.head] = x;
 }
 
 attribute pop_vlist(){
-  pop(vlist_stack);
+  attribute x = vlist_stack.tab[vlist_stack.head];
+  vlist_stack.head--;
+  return x;
 }
 
 int is_empty_vlist(){
-  is_empty(vlist_stack);
+  return (vlist_stack.head == 0);
 }
 
 
 void initialize_fun(){
-  initialize_stack(fun_stack);
+  fun_stack.head = 0;
 }
 
 void push_fun(attribute x){
-  push(x, fun_stack);
+  fun_stack.head++;
+  fun_stack.tab[fun_stack.head] = x;
 }
 
 attribute pop_fun(){
-  pop(fun_stack);
+  attribute x = fun_stack.tab[fun_stack.head];
+  fun_stack.head--;
+  return x;
 }
 
 int is_empty_fun(){
-  is_empty(fun_stack);
+  return (fun_stack.head == 0);
 }
 
 int last_argument_fun(){
-  last_argument(fun_stack);
+  return (fun_stack.head == 1);
 }
 
 
@@ -230,3 +207,4 @@ attribute or_attribute(attribute x, attribute y){
 
 
 // free registers
+// rassembler les opérations booléens dans une seule fonction
