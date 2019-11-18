@@ -69,7 +69,7 @@ decl: var_decl PV              {}
 ;
 
 // I.1. Variables
-var_decl : type vlist          { while( !is_empty_pile() ){
+var_decl : type vlist          {  while( !is_empty_pile() ){
                                   write_type(current_type);
                                   printf("%s;\n", pop()->name);}
                                 }
@@ -90,17 +90,28 @@ attr : type ID                 {}
 fun_decl : type fun            {}
 ;
 
-fun : fun_head fun_body        {}
+fun : fun_head fun_body        { } //printf("}\n");}
 ;
 
-fun_head : ID PO PF            {}
-| ID PO params PF              {}
+fun_head : ID PO PF            { }
+                                  //  write_type(current_type);
+                                  // printf("%s(){\n", $1->name);}
+| ID PO params PF              { }
+                                  // write_type(current_type);
+                                  // printf("%s({\n", $1->name);
+                                  // while( !last_param() ){
+                                  //   write_type(current_type);
+                                  //   printf("%s, ", pop_param()->name);
+                                  // }
+                                  // write_type(current_type);
+                                  // printf("%s )", pop_param()->name);
+                                  // }
 ;
 
-params: type ID vir params     {}
-| type ID                      {}
+params: type ID vir params     { }
+| type ID                      { }
 
-vlist: ID vir vlist            { push($1); }
+vlist: ID vir vlist            {}
 | ID                           {  initialise_pile();
                                   push($1);
                                 }
@@ -164,7 +175,7 @@ aff : ID EQ exp               { printf("%s = ri%d;\n", $1->name, $3->reg_number)
 
 
 // II.2 Return
-ret : RETURN exp              {}
+ret : RETURN exp              {printf("return ri%d;\n", $2->reg_number);}
 | RETURN PO PF                {}
 ;
 
@@ -235,13 +246,13 @@ exp
 
 | NUMI                        { $$ = $1;
                                 $$->reg_number = new_reg_num();
-                                printf("int ri%d;\n", $$->reg_number);
+                                printf("_.h_int ri%d;\n", $$->reg_number);
                                 printf("ri%d = %d;\n", $$->reg_number, $$->int_val);
                                 }
 
 | NUMF                        { $$ = $1;
                                 $$->reg_number = new_reg_num();
-                                printf("float ri%d;\n", $$->reg_number);
+                                printf("_.h_float ri%d;\n", $$->reg_number);
                                 printf("ri%d = %f;\n", $$->reg_number, $$->float_val);
                                 }
 
@@ -269,14 +280,22 @@ exp
 
 // II.4 Applications de fonctions
 
-app : ID PO args PF;
+app : ID PO args PF;         
 
 args :  arglist               {}
+                              // printf("%s\(");
+                              //  while( !last_argument_fun ){        // a faire
+                              //  printf("%s, ", pop_fun()->name);
+                              //  }
+                              //  printf("%s );"), pop_fun()->name} // a faire
 |                             {}
 ;
 
 arglist : exp VIR arglist     {}
+                                // push_fun($1);}
 | exp                         {}
+                                // initialise_fun_pile();
+                                // push_fun($1);}
 ;
 %%
 
