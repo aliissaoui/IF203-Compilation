@@ -1,6 +1,6 @@
 #!/bin/bash
 make clean && make        
-( ./myc < $1 ) > tmp.txt;
+( ./myc < $1 ) > tmp.txt
 
 
 echo "#include <stdio.h>

@@ -1,0 +1,12 @@
+int zero(int a ){
+    if ( a > 0 ){
+        a = a-1;
+        return zero(a);
+    };
+    return a;
+
+}
+
+int c,k;
+c=5;
+k=zero(c);
