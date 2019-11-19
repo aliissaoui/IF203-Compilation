@@ -5,9 +5,8 @@ make clean && make
 
 echo "#include <stdio.h>
 #include \"test.h\"
-
-int main(){
 " > tst/test.c
+
 
 echo "#ifndef TEST_H
 #define TEST_H
@@ -22,4 +21,5 @@ return 0;
 }" >> tst/test.c
 echo "
 #endif" >> tst/test.h
+rm tmp.txt
 

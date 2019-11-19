@@ -13,6 +13,7 @@ extern int yyparse();
 void yyerror (char* s) {
   printf ("%s\n",s);
 } 
+int dec_count = 0, ver_count=0;
 
 %}
 
@@ -38,8 +39,9 @@ void yyerror (char* s) {
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp vir vlist typename aff var_decl type stat cond bool_cond else while while_cond fun_head params
-
+%type <val> exp type vir vlist typename aff var_decl decl_list
+%type <val> cond stat bool_cond else while while_cond
+%type <val> fun_head params args app
 
 %start prog  
 
@@ -56,12 +58,14 @@ decl_list inst_list            {}
 
 // I. Declarations
 
-decl_list : decl decl_list     {}
-| decl                         {}
-|                              {} // we needed to add it to recognize file end.
+decl_list : decl decl_list     { ver_count++;
+                                 if (ver_count == dec_count)
+                                    printf("int main(){\n");}
+| decl                         { }
+|                              { } // we needed to add it to recognize file end.
 ;
 
-decl: var_decl PV              {}
+decl: var_decl PV              { dec_count++;}
 | struct_decl PV               {}
 | fun_decl                     {}
 ;
@@ -88,12 +92,17 @@ attr : type ID                 {}
 fun_decl : type fun            {}
 ;
 
-fun : fun_head fun_body        {printf("}\n");}
+fun : fun_head fun_body        {}
 ;
 
-fun_head : ID PO PF            { write_type_c($1->type_val);  // prob
-                                 printf("%s(){\n", $1->name);}
-| ID PO params PF              {  write_type_c($1->type_val);
+fun_head : ID PO PF            { set_symbol_value($1->name, $1);
+                                 write_type($1->type_val);
+                                 printf("%s();\n", $1->name);
+                                 write_type_c($1->type_val);
+                                 printf("%s(){\n", $1->name);
+                                 }
+| ID PO params PF              {  set_symbol_value($1->name, $1);
+                                  write_type_c($1->type_val);
                                   printf("%s( ", $1->name);
                                   while( !last_argument_fun() ){
                                     $$ = pop_fun();
@@ -118,28 +127,28 @@ vlist: ID vir vlist            {  push_vlist($1);}
                                   push_vlist($1); }
 ;
 
-vir : VIR                      { }
+vir : VIR                      {}
 ;
 
-fun_body : AO block AF         {}
+fun_body : AO block AF         {printf("}\n\n");}
 ;
 
 // I.4. Types
 type
 : typename pointer             {}
-| typename                     { $$ = $1;}
+| typename                     { $$ = $1; }
 ;
 
 typename
 
 : TINT                          { $$ = new_attribute();
-                                  $$->type_val = INT;}
+                                  $$->type_val = INT; }
 
 | TFLOAT                        { $$ = new_attribute();
-                                  $$->type_val = FLOAT;}
+                                  $$->type_val = FLOAT; }
 
 | VOID                          { $$ = new_attribute();
-                                  $$->type_val = TVOID;}
+                                  $$->type_val = TVOID; }
 
 | STRUCT ID                     {}
 ;
@@ -278,19 +287,26 @@ exp
 | exp ARR ID                  {}
 | exp DOT ID                  {}
 
-| app                         {}
+| app                         {  $$ = $1; }
 ;
 
 // II.4 Applications de fonctions
 
-app : ID PO args PF;         
+app : ID PO args PF           { $$ = $3; }
 
-args :  arglist               {
-                                printf("%s\(", $<val>-1->name );
+args :  arglist               { 
+                                $$ = get_symbol_value(($<val>-1)->name);
+                                if( $$->type_val != VOID ){
+                                  $$->reg_number = new_reg_num();
+                                  write_type($$->type_val);
+                                  printf("ri%d;\n", $$->reg_number);
+                                  printf("ri%d = ", $$->reg_number);
+                                }
+                                printf("%s\( ", $<val>-1->name );
                                   while( !last_argument_fun() ){        // a faire
                                   printf("%s, ", pop_fun()->name);
                                 }
-                                printf("%s )", pop_fun()->name);} // a faire
+                                printf("%s ); \n", pop_fun()->name);} // a faire
 |                             {}
 ;
 
