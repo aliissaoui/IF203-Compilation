@@ -6,48 +6,74 @@
 int reg_count=0;
 int label_count=0;
 
-void initialize_vlist(){
-  vlist_stack.head = 0;
+
+void initialize_stack(stack* s){
+  s->head = 0;
 }
 
-void push_vlist(attribute x){
-  vlist_stack.head++;
-  vlist_stack.tab[vlist_stack.head] = x;
+
+void push(attribute x, stack* s){
+  s->head++;
+  s->tab[s->head] = x;
 }
 
-attribute pop_vlist(){
-  attribute x = vlist_stack.tab[vlist_stack.head];
-  vlist_stack.head--;
+attribute pop(stack* s){
+  attribute x = s->tab[s->head];
+  s->head--;
   return x;
 }
 
+int is_empty(stack* s){
+  if (s->head == 0)
+    return 1;
+  return 0;
+}
+
+int last_argument(stack* s){
+  if (s->head == 1)
+    return 1;
+  return 0;
+}
+
+
+void initialize_vlist(){
+  initialize_stack(&vlist_stack);
+}
+
+void push_vlist(attribute x){
+  push(x, &vlist_stack);
+}
+
+attribute pop_vlist(){
+  return pop(&vlist_stack);
+}
+
 int is_empty_vlist(){
-  return (vlist_stack.head == 0);
+  return is_empty(&vlist_stack);
 }
 
 
 void initialize_fun(){
-  fun_stack.head = 0;
+  initialize_stack(&fun_stack);
 }
 
 void push_fun(attribute x){
-  fun_stack.head++;
-  fun_stack.tab[fun_stack.head] = x;
+  push(x, &fun_stack);
 }
 
 attribute pop_fun(){
-  attribute x = fun_stack.tab[fun_stack.head];
-  fun_stack.head--;
-  return x;
+  return pop(&fun_stack);
 }
 
 int is_empty_fun(){
-  return (fun_stack.head == 0);
+  return is_empty(&fun_stack);
 }
 
 int last_argument_fun(){
-  return (fun_stack.head == 1);
+  return last_argument(&fun_stack);
 }
+
+
 
 
 
