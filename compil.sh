@@ -2,24 +2,26 @@
 make clean && make        
 ( ./myc < $1 ) > tmp.txt
 
+file=$(echo $1 | sed -e "s/.myc//g")
+inc=$(echo $file | sed -e "s/tst\///g" )
 
 echo "#include <stdio.h>
-#include \"test.h\"
-" > tst/test.c
+#include \"$inc.h\"
+" > $file.c
 
 
 echo "#ifndef TEST_H
 #define TEST_H
-" > tst/test.h
+" > $file.h
 
-grep _.h_ tmp.txt | sed -e "s/_.h_//g" >> tst/test.h
-grep -v _.h_ tmp.txt >> tst/test.c
+grep _.h_ tmp.txt | sed -e "s/_.h_//g" >> $file.h
+grep -v _.h_ tmp.txt >> $file.c
 
 
 echo "
 return 0;
-}" >> tst/test.c
+}" >> $file.c
 echo "
-#endif" >> tst/test.h
+#endif" >> $file.h
 rm tmp.txt
-
+gcc $file.c -o $file
