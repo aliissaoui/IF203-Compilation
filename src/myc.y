@@ -6,6 +6,7 @@
 %{
 #include <stdio.h>
 #include "src/Attribute.h"
+#include <string.h>
 
 extern int yylex();
 extern int yyparse();
@@ -117,8 +118,10 @@ fun_head : ID PO PF            { set_symbol_value($1->name, $1);
 
 params: type ID vir params     { $$ = $1;
                                  $2->type_val = $1->type_val;
+                                 $2->stars = $1->stars;
                                  push_fun($2); }
 | type ID                      { initialize_fun();
+                                 $2->stars = $1->stars;
                                  $2->type_val = $1->type_val;
                                  push_fun($2); }
 
@@ -301,6 +304,7 @@ exp
 app : ID PO args PF           { $$ = $3; }
 
 args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
+        
                                 if( $$->type_val != VOID ){
                                   $$->reg_number = new_reg_num();
                                   write_type_c($$->type_val);
@@ -308,10 +312,17 @@ args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
                                   printf("ri%d = ", $$->reg_number);
                                 }
                                 printf("%s\( ", $<val>-1->name );
-                                  while( !last_argument_fun() ){        // a faire
-                                  printf("%s, ", pop_fun()->name);
+                                  while( !last_argument_fun() ){
+
+                                    if ( strcmp(head_fun()->name,"1r") )
+                                      printf("%s, ", pop_fun()->name);
+                                    else
+                                      printf("ri%d, ", pop_fun()->reg_number);
                                 }
-                                printf("%s ); \n", pop_fun()->name);} // a faire
+                                if ( strcmp(head_fun()->name,"1r") )
+                                  printf("%s);\n", pop_fun()->name);
+                                else
+                                  printf("ri%d);\n", pop_fun()->reg_number);}
 |                             {}
 ;
 

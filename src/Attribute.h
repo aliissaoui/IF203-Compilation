@@ -45,14 +45,6 @@ stack vlist_stack;
 stack fun_stack;
 
 
-
-void initialize_stack(stack* s);
-void push(attribute x, stack* s);
-attribute pop(stack* s);
-int is_empty(stack* s);
-int last_argument(stack* s);
-
-
 void initialize_vlist();
 void push_vlist(attribute x);
 attribute pop_vlist();
@@ -64,9 +56,7 @@ void push_fun(attribute x);
 attribute pop_fun();
 int is_empty_fun();
 int last_argument_fun();
-
-
-
+attribute head_fun();
 
 
 attribute new_attribute ();

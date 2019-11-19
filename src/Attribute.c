@@ -23,6 +23,10 @@ attribute pop(stack* s){
   return x;
 }
 
+attribute head(stack *s){
+  return s->tab[s->head];
+}
+
 int is_empty(stack* s){
   if (s->head == 0)
     return 1;
@@ -65,6 +69,10 @@ attribute pop_fun(){
   return pop(&fun_stack);
 }
 
+attribute head_fun(){
+  return head(&fun_stack);
+}
+
 int is_empty_fun(){
   return is_empty(&fun_stack);
 }
@@ -77,6 +85,7 @@ attribute new_attribute () {
   attribute r;
   r  = malloc (sizeof (struct ATTRIBUTE));
   r->stars = 0;
+  r->name="1r";
   return r;
 };
 
