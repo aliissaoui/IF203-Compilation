@@ -81,6 +81,7 @@ attribute and_attribute(attribute x, attribute y);
 attribute or_attribute(attribute x, attribute y);
 
 void write_type(type t);
+void write_type_c(type t);
 
 #endif
 

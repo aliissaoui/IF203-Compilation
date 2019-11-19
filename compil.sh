@@ -22,4 +22,4 @@ return 0;
 }" >> tst/test.c
 echo "
 #endif" >> tst/test.h
-rm tmp.txt
+

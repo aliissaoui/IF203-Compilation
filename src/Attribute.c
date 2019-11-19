@@ -73,6 +73,13 @@ void write_type(type t){
     printf("_.h_float ");
 }
 
+void write_type_c(type t){
+  if ( t == INT )
+    printf("int ");
+  else if ( t == FLOAT)
+    printf("float ");
+}
+
 attribute plus_attribute(attribute x, attribute y) {
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
@@ -208,3 +215,4 @@ attribute or_attribute(attribute x, attribute y){
 
 // free registers
 // rassembler les opérations booléens dans une seule fonction
+// cast variables

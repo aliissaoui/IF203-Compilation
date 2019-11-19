@@ -88,20 +88,20 @@ attr : type ID                 {}
 fun_decl : type fun            {}
 ;
 
-fun : fun_head fun_body        { } //printf("}\n");}
+fun : fun_head fun_body        {printf("}\n");}
 ;
 
-fun_head : ID PO PF            { write_type($1->type_val);  // prob
+fun_head : ID PO PF            { write_type_c($1->type_val);  // prob
                                  printf("%s(){\n", $1->name);}
-| ID PO params PF              {  write_type($1->type_val);
-                                  printf("%s(\n", $1->name);
+| ID PO params PF              {  write_type_c($1->type_val);
+                                  printf("%s( ", $1->name);
                                   while( !last_argument_fun() ){
                                     $$ = pop_fun();
-                                    write_type($$->type_val);
+                                    write_type_c($$->type_val);
                                     printf("%s, ", $$->name);
                                   }
                                   $$ = pop_fun();
-                                  write_type($$->type_val);
+                                  write_type_c($$->type_val);
                                   printf("%s ){\n", $$->name);
                                 }
 ;
