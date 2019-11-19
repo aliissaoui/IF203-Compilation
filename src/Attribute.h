@@ -24,6 +24,7 @@ struct ATTRIBUTE {
   
   /* other attribute's fields can goes here */ 
   int _else;
+  int stars;
 
 };
 
@@ -82,6 +83,7 @@ attribute or_attribute(attribute x, attribute y);
 
 void write_type(type t);
 void write_type_c(type t);
+void write_stars(attribute r);
 
 #endif
 
