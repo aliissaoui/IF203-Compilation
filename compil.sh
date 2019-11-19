@@ -23,5 +23,5 @@ return 0;
 }" >> $file.c
 echo "
 #endif" >> $file.h
-rm tmp.txt
+
 gcc $file.c -o $file

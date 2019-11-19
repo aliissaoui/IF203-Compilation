@@ -73,10 +73,6 @@ int last_argument_fun(){
   return last_argument(&fun_stack);
 }
 
-
-
-
-
 attribute new_attribute () {
   attribute r;
   r  = malloc (sizeof (struct ATTRIBUTE));

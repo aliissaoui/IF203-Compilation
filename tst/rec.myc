@@ -9,4 +9,4 @@ int zero(int a ){
 
 int c,k;
 c=5;
-k=zero(c);
+k=zero(c)

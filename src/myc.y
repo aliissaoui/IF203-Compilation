@@ -13,7 +13,7 @@ extern int yyparse();
 void yyerror (char* s) {
   printf ("%s\n",s);
 } 
-int dec_count = 0, ver_count=0;
+int dec_count = 0, verif_count=0;
 
 %}
 
@@ -39,7 +39,7 @@ int dec_count = 0, ver_count=0;
 %left DOT ARR                  // higher priority on . and -> 
 %nonassoc UNA                  // highest priority on unary operator
  
-%type <val> exp type vir vlist typename aff var_decl decl_list
+%type <val> exp type pointer STAR vir vlist typename aff var_decl decl_list
 %type <val> cond stat bool_cond else while while_cond
 %type <val> fun_head params args app
 
@@ -58,11 +58,10 @@ decl_list inst_list            {}
 
 // I. Declarations
 
-decl_list : decl decl_list     { ver_count++;
-                                 if (ver_count == dec_count)
+decl_list : decl decl_list     { verif_count++;
+                                 if (verif_count == dec_count)
                                     printf("int main(){\n");}
-| decl                         { }
-|                              { } // we needed to add it to recognize file end.
+|                              { }
 ;
 
 decl: var_decl PV              { dec_count++;}
@@ -72,8 +71,9 @@ decl: var_decl PV              { dec_count++;}
 
 // I.1. Variables
 var_decl : type vlist          {  while( !is_empty_vlist() ){
-                                  write_type($1->type_val);
-                                  printf("%s;\n", pop_vlist()->name);}
+                                    write_type($1->type_val);
+                                    write_stars($1);
+                                    printf("%s;\n", pop_vlist()->name);}
                                 }
 ;
 
@@ -96,7 +96,7 @@ fun : fun_head fun_body        {}
 ;
 
 fun_head : ID PO PF            { set_symbol_value($1->name, $1);
-                                 write_type($1->type_val);
+                                 write_type_c($1->type_val);
                                  printf("%s();\n", $1->name);
                                  write_type_c($1->type_val);
                                  printf("%s(){\n", $1->name);
@@ -135,7 +135,9 @@ fun_body : AO block AF         {printf("}\n\n");}
 
 // I.4. Types
 type
-: typename pointer             {}
+: typename pointer             { $$ = $2;
+                                 $$->type_val = $1->type_val;
+                                  }
 | typename                     { $$ = $1; }
 ;
 
@@ -154,8 +156,11 @@ typename
 ;
 
 pointer
-: pointer STAR                 {}
-| STAR                         {}
+: pointer STAR                 { $$=$2;
+                                 $$->stars++; }
+| STAR                         { $$ = new_attribute();
+                                 $$->stars++;
+                                }
 ;
 
 
@@ -167,8 +172,9 @@ inst_list: inst PV inst_list   {}
 ;
 
 inst:
-  
-  AO block AF                 {}
+
+exp                           {}
+| AO block AF                 {}
 | aff                         {}
 | ret                         {}
 | cond                        {}
@@ -194,8 +200,8 @@ ret : RETURN exp              {printf("return ri%d;\n", $2->reg_number);}
 // II.3. Conditionelles
 
 cond :
-if bool_cond stat else stat   { printf("l%d:\n", $3->int_val);}
-|  if bool_cond stat          { printf("l%d:\n", $3->int_val);}
+if bool_cond stat else stat   { printf("l%d:;\n", $3->int_val);}
+|  if bool_cond stat          { printf("l%d:;\n", $3->int_val);}
 ;
 
 stat:
@@ -233,7 +239,7 @@ while_cond : PO exp PF        { $$ = $2;
 
 while : WHILE                 { $$ = new_attribute();
                                 $$->int_val = new_label(); 
-                                printf("l%d:\n", $$->int_val);}
+                                printf("l%d:;\n", $$->int_val);}
 ;
 
 
@@ -251,20 +257,20 @@ exp
                                 
 | ID                          { $$ = $1;
                                 $$->reg_number = new_reg_num();
-                                write_type($1->type_val);
+                                write_type_c($1->type_val);
                                 printf("ri%d;\n", $$->reg_number);                                
                                 printf("ri%d = %s;\n", $$->reg_number, yylval.val -> name);
                                 }
 
 | NUMI                        { $$ = $1;
                                 $$->reg_number = new_reg_num();
-                                printf("_.h_int ri%d;\n", $$->reg_number);
+                                printf("int ri%d;\n", $$->reg_number);
                                 printf("ri%d = %d;\n", $$->reg_number, $$->int_val);
                                 }
 
 | NUMF                        { $$ = $1;
                                 $$->reg_number = new_reg_num();
-                                printf("_.h_float ri%d;\n", $$->reg_number);
+                                printf("float ri%d;\n", $$->reg_number);
                                 printf("ri%d = %f;\n", $$->reg_number, $$->float_val);
                                 }
 
@@ -294,11 +300,10 @@ exp
 
 app : ID PO args PF           { $$ = $3; }
 
-args :  arglist               { 
-                                $$ = get_symbol_value(($<val>-1)->name);
+args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
                                 if( $$->type_val != VOID ){
                                   $$->reg_number = new_reg_num();
-                                  write_type($$->type_val);
+                                  write_type_c($$->type_val);
                                   printf("ri%d;\n", $$->reg_number);
                                   printf("ri%d = ", $$->reg_number);
                                 }
@@ -310,7 +315,7 @@ args :  arglist               {
 |                             {}
 ;
 
-arglist : exp VIR arglist     {push_fun($1);}
+arglist : exp VIR arglist     { push_fun($1);}
 | exp                         { initialize_fun();
                                  push_fun($1);}
 ;
