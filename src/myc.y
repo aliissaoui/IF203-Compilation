@@ -156,7 +156,7 @@ typename
 ;
 
 pointer
-: pointer STAR                 { $$=$2;
+: pointer STAR                 { $$=$1;
                                  $$->stars++; }
 | STAR                         { $$ = new_attribute();
                                  $$->stars++;
