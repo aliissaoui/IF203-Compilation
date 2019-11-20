@@ -49,7 +49,8 @@ void initialize_vlist();
 void push_vlist(attribute x);
 attribute pop_vlist();
 int is_empty_vlist();
-
+attribute head_vlist();
+int last_argument_vlist();
 
 void initialize_fun();
 void push_fun(attribute x);
@@ -64,23 +65,17 @@ attribute new_attribute ();
 
 int new_reg_num();
 int new_label();
-void write_type(type t);
+void write_type(attribute r);
+void write_type_c(attribute r);
+void write_stars(attribute r);
+void write_func( attribute r);
 
 attribute plus_attribute(attribute x, attribute y);
 attribute mult_attribute(attribute x, attribute y);
 attribute minus_attribute(attribute x, attribute y);
 attribute div_attribute(attribute x, attribute y);
 attribute neg_attribute(attribute x);
-attribute inf_attribute(attribute x, attribute y);
-attribute sup_attribute(attribute x, attribute y);
-attribute equal_attribute(attribute x, attribute y);
-attribute diff_attribute(attribute x, attribute y);
-attribute and_attribute(attribute x, attribute y);
-attribute or_attribute(attribute x, attribute y);
-
-void write_type(type t);
-void write_type_c(type t);
-void write_stars(attribute r);
+attribute bool_attribute(attribute x, char* op, attribute y);
 
 #endif
 

@@ -72,9 +72,10 @@ decl: var_decl PV              { dec_count++;}
 
 // I.1. Variables
 var_decl : type vlist          {  while( !is_empty_vlist() ){
-                                    write_type($1->type_val);
-                                    write_stars($1);
-                                    printf("%s;\n", pop_vlist()->name);}
+                                    head_vlist()->reg_number = new_reg_num();
+                                    set_symbol_value(head_vlist()->name, head_vlist());
+                                    write_type($1);
+                                    printf("%s, ri%d;\n", head_vlist()->name, pop_vlist()->reg_number);}
                                 }
 ;
 
@@ -90,29 +91,35 @@ attr : type ID                 {}
 
 // I.3. Functions
 
-fun_decl : type fun            {}
+fun_decl : type fun            {finish_func();} // to go back to the backup symbole table
 ;
 
 fun : fun_head fun_body        {}
 ;
 
 fun_head : ID PO PF            { set_symbol_value($1->name, $1);
-                                 write_type_c($1->type_val);
-                                 printf("%s();\n", $1->name);
-                                 write_type_c($1->type_val);
-                                 printf("%s(){\n", $1->name);
+                                 write_func($1);
                                  }
 | ID PO params PF              {  set_symbol_value($1->name, $1);
-                                  write_type_c($1->type_val);
+                                  write_type_c($1);
                                   printf("%s( ", $1->name);
+                                  $3->int_val=0;
+                                  declare_func(); // to start a new symbole table
                                   while( !last_argument_fun() ){
+                                    $3->int_val++;
+                                    head_fun()->reg_number = new_reg_num();
+                                    set_symbol_value(head_fun()->name, head_fun());
                                     $$ = pop_fun();
-                                    write_type_c($$->type_val);
+                                    write_type_c($$);
                                     printf("%s, ", $$->name);
                                   }
+                                  $3->int_val++;
+                                  head_fun()->reg_number = new_reg_num();
+                                  set_symbol_value(head_fun()->name, head_fun());
                                   $$ = pop_fun();
-                                  write_type_c($$->type_val);
+                                  write_type_c($$);
                                   printf("%s ){\n", $$->name);
+                                  declar_params($3->int_val);
                                 }
 ;
 
@@ -120,12 +127,14 @@ params: type ID vir params     { $$ = $1;
                                  $2->type_val = $1->type_val;
                                  $2->stars = $1->stars;
                                  push_fun($2); }
+
 | type ID                      { initialize_fun();
                                  $2->stars = $1->stars;
                                  $2->type_val = $1->type_val;
                                  push_fun($2); }
 
 vlist: ID vir vlist            {  push_vlist($1);}
+
 | ID                           {  initialize_vlist();
                                   push_vlist($1); }
 ;
@@ -188,7 +197,9 @@ exp                           {}
 
 // II.1 Affectations
 
-aff : ID EQ exp               { printf("%s = ri%d;\n", $1->name, $3->reg_number);
+aff : ID EQ exp               { printf("ri%d = ri%d;\n", get_symbol_value($1->name)->reg_number, $3->reg_number);
+                                
+                                printf("%s = ri%d;\n", $1->name, $3->reg_number);
                                 printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
                                 }
 | exp STAR EQ exp             {}
@@ -211,7 +222,7 @@ stat:
 AO block AF                   { if ( $<val>0->_else  == 0 ) {
                                   $$ = new_attribute();
                                   $$->int_val = new_label();
-                                  printf("goto l%d;\nl%d:\n", $$->int_val, $<val>0->int_val);
+                                  printf("goto l%d;\nl%d:;\n", $$->int_val, $<val>0->int_val);
                                 }
                               }   
 ;
@@ -240,11 +251,11 @@ while_cond : PO exp PF        { $$ = $2;
                                 $$ -> int_val = new_label();
                                 printf("if ( !ri%d ) goto l%d;\n", $$->reg_number, $$->int_val ); }
 
+
 while : WHILE                 { $$ = new_attribute();
                                 $$->int_val = new_label(); 
                                 printf("l%d:;\n", $$->int_val);}
 ;
-
 
 // II.3 Expressions
 exp
@@ -258,12 +269,7 @@ exp
 
 | PO exp PF                   { $$ = $2; }
                                 
-| ID                          { $$ = $1;
-                                $$->reg_number = new_reg_num();
-                                write_type_c($1->type_val);
-                                printf("ri%d;\n", $$->reg_number);                                
-                                printf("ri%d = %s;\n", $$->reg_number, yylval.val -> name);
-                                }
+| ID                          { $$ = get_symbol_value($1->name);}
 
 | NUMI                        { $$ = $1;
                                 $$->reg_number = new_reg_num();
@@ -284,19 +290,19 @@ exp
 // II.3.2. Booléens
 
 | NOT exp %prec UNA           {}
-| exp INF exp                 { $$ = inf_attribute($1, $3); }
-| exp SUP exp                 { $$ = sup_attribute($1, $3); }
-| exp EQUAL exp               { $$ = equal_attribute($1, $3); }
-| exp DIFF exp                { $$ = diff_attribute($1, $3); }
-| exp AND exp                 { $$ = and_attribute($1, $3); }
-| exp OR exp                  { $$ = or_attribute($1, $3); }
+| exp INF exp                 { $$ = bool_attribute($1, "<", $3); }
+| exp SUP exp                 { $$ = bool_attribute($1, ">", $3); }
+| exp EQUAL exp               { $$ = bool_attribute($1, "==", $3); }
+| exp DIFF exp                { $$ = bool_attribute($1, "!=", $3); }
+| exp AND exp                 { $$ = bool_attribute($1, "&&", $3); }
+| exp OR exp                  { $$ = bool_attribute($1, "||", $3); }
 
 // II.3.3. Structures
 
 | exp ARR ID                  {}
 | exp DOT ID                  {}
 
-| app                         {  $$ = $1; }
+| app                         { $$ = $1; }
 ;
 
 // II.4 Applications de fonctions
@@ -307,11 +313,11 @@ args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
         
                                 if( $$->type_val != VOID ){
                                   $$->reg_number = new_reg_num();
-                                  write_type_c($$->type_val);
+                                  write_type_c($$);
                                   printf("ri%d;\n", $$->reg_number);
                                   printf("ri%d = ", $$->reg_number);
                                 }
-                                printf("%s\( ", $<val>-1->name );
+                                  printf("%s\( ", $<val>-1->name );
                                   while( !last_argument_fun() ){
 
                                     if ( strcmp(head_fun()->name,"1r") )
@@ -320,9 +326,9 @@ args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
                                       printf("ri%d, ", pop_fun()->reg_number);
                                 }
                                 if ( strcmp(head_fun()->name,"1r") )
-                                  printf("%s);\n", pop_fun()->name);
+                                  printf("%s );\n", pop_fun()->name);
                                 else
-                                  printf("ri%d);\n", pop_fun()->reg_number);}
+                                  printf("ri%d );\n", pop_fun()->reg_number);}
 |                             {}
 ;
 

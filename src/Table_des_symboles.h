@@ -25,4 +25,9 @@ attribute get_symbol_value(sid symb_id);
 /* set the value of symbol symb_id to value, return NULL if it fails */
 attribute set_symbol_value(sid symb_id,attribute value);
 
+
+void declare_func();
+void finish_func();
+void declar_params(int nb_params);
+
 #endif
