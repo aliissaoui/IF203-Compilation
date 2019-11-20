@@ -169,7 +169,7 @@ attribute plus_attribute(attribute x, attribute y)
   }
   else
   {
-    printf("\nfloat ri%f;\n", r->reg_number);
+    printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d + ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
@@ -187,7 +187,7 @@ attribute mult_attribute(attribute x, attribute y)
   }
   else
   {
-    printf("\nfloat ri%f;\n", r->reg_number);
+    printf("\nfloat ri%d;\n", r->reg_number);
   }
 
   printf("ri%d = ri%d * ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
@@ -206,7 +206,7 @@ attribute minus_attribute(attribute x, attribute y)
   }
   else
   {
-    printf("\nfloat ri%f;\n", r->reg_number);
+    printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d - ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
@@ -224,7 +224,7 @@ attribute div_attribute(attribute x, attribute y)
   }
   else
   {
-    printf("\nfloat ri%f;\n", r->reg_number);
+    printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d / ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
@@ -255,9 +255,9 @@ attribute bool_attribute(attribute x, char* op, attribute y)
 
 
 // free registers
-// rassembler les opérations booléens dans une seule fonction
 // instructions du genre a = f(a) + f(b); ne marche pas (même f)
 // problem with functions without params
+// problem: decl + inst inside functin => main de plus :(
 
 //Questions
 // cast variables ???

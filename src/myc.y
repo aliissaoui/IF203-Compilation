@@ -200,7 +200,11 @@ exp                           {}
 aff : ID EQ exp               { printf("ri%d = ri%d;\n", get_symbol_value($1->name)->reg_number, $3->reg_number);
                                 
                                 printf("%s = ri%d;\n", $1->name, $3->reg_number);
-                                printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
+                                if ( $1->type_val == INT) 
+                                  printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
+                                else
+                                  printf("printf(\"%s = %%f\\n\", %s);\n", $1->name, $1->name);
+
                                 }
 | exp STAR EQ exp             {}
 ;

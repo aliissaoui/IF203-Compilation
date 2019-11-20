@@ -99,6 +99,7 @@ void finish_func()
 {
 	elem *tracker;
 	elem *back;
+	elem *to_free;
 	/* look for copying backup elements in storage */
 	//printf("\n//in finish func\n");
 	tracker = backup;
@@ -109,7 +110,9 @@ void finish_func()
 		back->symbol_value = tracker->symbol_value;
 		back->next = storage;
 		storage = back;
+		to_free = tracker;
 		tracker = tracker->next;
+		free(to_free);
 	}
 }
 
