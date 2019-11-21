@@ -71,11 +71,12 @@ decl: var_decl PV              {}
 
 // I.1. Variables
 var_decl : type vlist          {  while( !is_empty_vlist() ){
-                                    /* head_vlist()->reg_number = new_reg_num(); */
-                                    head_vlist()->type_val = $1->type_val;
-                                    set_symbol_value(head_vlist()->name, head_vlist());
+                                    $2 = pop_vlist();
+                                    $2 -> reg_number = new_reg_num();
+                                    $2 -> type_val = $1->type_val;
+                                    set_symbol_value($2->name, $2);
                                     write_type($1);
-                                    printf("%s, ri%d;\n", head_vlist()->name, pop_vlist()->reg_number);}
+                                    printf("%s, ri%d;\n", $2->name, $2->reg_number);}
                                 }
 ;
 
@@ -136,11 +137,9 @@ params: type ID vir params     { $$ = $1;
                                  $2->type_val = $1->type_val;
                                  push_fun($2); }
 
-vlist: ID vir vlist            {  $1->reg_number = new_reg_num();
-                                  push_vlist($1);}
+vlist: ID vir vlist            { push_vlist($1);}
 
 | ID                           {  initialize_vlist();
-                                  $1->reg_number = new_reg_num();
                                   push_vlist($1); }
 ;
 
