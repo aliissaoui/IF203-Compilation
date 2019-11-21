@@ -1,0 +1,12 @@
+float f(int a, float b){
+  return a+b;
+}
+
+int a;
+float k;
+float b;
+a=1;
+k=2.4;
+
+b = f(a,k);
+b = a+k;

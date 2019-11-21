@@ -1,0 +1,8 @@
+int fct(int a){
+  a=a*a;
+  return a;
+}
+
+int b;
+b=5;
+b=fct(b);

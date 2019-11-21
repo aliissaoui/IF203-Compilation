@@ -1,0 +1,4 @@
+int **a;
+int *** c,d,e;
+float *f,j;
+float ***** l,m,n;

@@ -70,6 +70,10 @@ void write_type(attribute r);
 void write_type_c(attribute r);
 void write_stars(attribute r);
 void write_func( attribute r);
+void write_aff(attribute r, attribute s, int reg_num);
+void write_aff_p(attribute r, attribute s, int reg_num);
+int apply_fun_with_param( attribute r, attribute back);
+int apply_fun_without_param(attribute r, attribute back);
 
 attribute plus_attribute(attribute x, attribute y);
 attribute mult_attribute(attribute x, attribute y);

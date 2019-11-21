@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 int reg_count = 0;
 int label_count = 0;
 
 //QUEUE
-void initialize_stack(stack *s)
-{
+void initialize_stack(stack *s){
   s->head = 0;
   s->capacity = CAPACITY;
   s->tab = malloc(sizeof(attribute)*CAPACITY);
@@ -17,8 +17,7 @@ void initialize_stack(stack *s)
 
 }
 
-void push(attribute x, stack *s)
-{
+void push(attribute x, stack *s){
   if ( s->head < s->capacity ){
     s->head++;
     s->tab[s->head] = x;
@@ -26,100 +25,84 @@ void push(attribute x, stack *s)
   else {
     s->tab = realloc( s->tab, sizeof(attribute)*CAPACITY*2);
     assert( s->tab != NULL );
+    s->capacity *= 2;
     s->head++;
     s->tab[s->head] = x;
   }
 }
 
-attribute pop(stack *s)
-{
+attribute pop(stack *s){
   attribute x = s->tab[s->head];
   s->head--;
   return x;
 }
 
-attribute head(stack *s)
-{
+attribute head(stack *s){
   return s->tab[s->head];
 }
 
-int is_empty(stack *s)
-{
+int is_empty(stack *s){
   if (s->head == 0)
     return 1;
   return 0;
 }
 
-int last_argument(stack *s)
-{
+int last_argument(stack *s){
   if (s->head == 1)
     return 1;
   return 0;
 }
 
-void initialize_vlist()
-{
+void initialize_vlist(){
   initialize_stack(&vlist_stack);
 }
 
-void push_vlist(attribute x)
-{
+void push_vlist(attribute x){
   push(x, &vlist_stack);
 }
 
-attribute pop_vlist()
-{
+attribute pop_vlist(){
   return pop(&vlist_stack);
 }
 
-attribute head_vlist()
-{
+attribute head_vlist(){
   return head(&vlist_stack);
 }
 
-int is_empty_vlist()
-{
+int is_empty_vlist(){
   return is_empty(&vlist_stack);
 }
 
-int last_argument_vlist()
-{
+int last_argument_vlist(){
   return last_argument(&vlist_stack);
 }
 
-void initialize_fun()
-{
+void initialize_fun(){
   initialize_stack(&fun_stack);
 }
 
-void push_fun(attribute x)
-{
+void push_fun(attribute x){
   push(x, &fun_stack);
 }
 
-attribute pop_fun()
-{
+attribute pop_fun(){
   return pop(&fun_stack);
 }
 
-attribute head_fun()
-{
+attribute head_fun(){
   return head(&fun_stack);
 }
 
-int is_empty_fun()
-{
+int is_empty_fun(){
   return is_empty(&fun_stack);
 }
 
-int last_argument_fun()
-{
+int last_argument_fun(){
   return last_argument(&fun_stack);
 }
 
 // ATTRIBUTES
-attribute new_attribute()
-{
+attribute new_attribute(){
   attribute r;
   r = malloc(sizeof(struct ATTRIBUTE));
   r->stars = 0;
@@ -127,19 +110,16 @@ attribute new_attribute()
   return r;
 };
 
-int new_reg_num()
-{
+int new_reg_num(){
   return reg_count++;
 }
 
-int new_label()
-{
+int new_label(){
   return label_count++;
 }
 
 //PRINTER
-void write_type(attribute r)
-{
+void write_type(attribute r){
   if (r->type_val == INT)
     printf("_.h_int ");
   else if (r->type_val == FLOAT)
@@ -147,59 +127,114 @@ void write_type(attribute r)
   write_stars(r);
 }
 
-void write_type_c(attribute r)
-{
+void write_type_c(attribute r){
   if (r->type_val == INT)
     printf("int ");
   else if (r->type_val == FLOAT)
     printf("float ");
 }
 
-void write_stars(attribute r)
-{
+void write_stars(attribute r){
   for (int i = 0; i < r->stars; i++)
   {
     printf("*");
   }
 }
 
-void write_func( attribute r)
-{
+void write_func(attribute r){
   write_type(r);
   printf("%s();\n", r->name);
   write_type_c(r);
-  printf("%s(){\n", r->name);
+  printf("_.f1_%s(){\n", r->name);
 }
 
-attribute plus_attribute(attribute x, attribute y)
-{
+void write_aff(attribute r, attribute s, int reg_num){
+  printf("ri%d = ri%d;\n", reg_num, s->reg_number);
+  printf("%s = ri%d;\n", r->name, s->reg_number);
+  if ( r->type_val == INT)
+    printf("printf(\"%s = %%d\\n\", %s);\n", r->name, r->name);
+  else
+    printf("printf(\"%s = %%f\\n\", %s);\n", r->name, r->name);
+}
+
+void write_aff_p(attribute r, attribute s, int reg_num){
+  printf("ri%d = *ri%d;\n", reg_num, s->reg_number);
+  printf("%s = *ri%d;\n", r->name, s->reg_number);
+  if ( r->type_val == INT)
+    printf("printf(\"%s = *%%d\\n\", %s);\n", r->name, r->name);
+  else
+    printf("printf(\"%s = *%%f\\n\", %s);\n", r->name, r->name);
+}
+
+
+int apply_fun_with_param( attribute r, attribute back){
+  if( r->type_val != TVOID ){
+    r->reg_number = new_reg_num();
+    write_type_c(r);
+    printf("ri%d;\n", r->reg_number);
+    printf("ri%d = ", r->reg_number);
+  }
+    printf("%s\( ", back->name );
+    while( !last_argument_fun() ){
+      if ( strcmp(head_fun()->name,"1r") )
+        printf("%s, ", pop_fun()->name);
+      else
+        printf("ri%d, ", pop_fun()->reg_number);
+  }
+  if ( strcmp(head_fun()->name,"1r") )
+    printf("%s );\n", pop_fun()->name);
+  else
+    printf("ri%d );\n", pop_fun()->reg_number);
+  printf("//returning :%d\n", r->reg_number);
+  int n = r->reg_number;
+  free(r);
+  return n;
+}
+
+int apply_fun_without_param(attribute r, attribute back){
+  if( r->type_val != TVOID ){
+    r->reg_number = new_reg_num();
+    write_type_c(r);
+    printf("ri%d;\n", r->reg_number);
+    printf("ri%d = ", r->reg_number);
+  }
+  printf("%s\();\n", back->name );
+  int n = r->reg_number;
+  free(r);
+  return n;
+}
+
+attribute plus_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   if (x->type_val == y->type_val)
   {
     write_type_c(x);
+    r->type_val = x->type_val;
     printf("ri%d;\n", r->reg_number);
   }
   else
   {
+    r->type_val = FLOAT;
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d + ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
 };
 
-attribute mult_attribute(attribute x, attribute y)
-{
+attribute mult_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   /* unconditionally adding integer values */
   if (x->type_val == y->type_val)
   {
+    r->type_val = x->type_val;
     write_type_c(x);
     printf("ri%d;\n", r->reg_number);
   }
   else
   {
+    r->type_val = FLOAT;
     printf("\nfloat ri%d;\n", r->reg_number);
   }
 
@@ -207,44 +242,45 @@ attribute mult_attribute(attribute x, attribute y)
   return r;
 };
 
-attribute minus_attribute(attribute x, attribute y)
-{
+attribute minus_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   /* unconditionally adding integer values */
   if (x->type_val == y->type_val)
   {
+    r->type_val = x->type_val;
     write_type_c(x);
     printf("ri%d;\n", r->reg_number);
   }
   else
   {
+    r->type_val = FLOAT;
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d - ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
 };
 
-attribute div_attribute(attribute x, attribute y)
-{
+attribute div_attribute(attribute x, attribute y){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   /* unconditionally adding integer values */
   if (x->type_val == y->type_val)
   {
+    r->type_val = x->type_val;
     write_type_c(x);
     printf("ri%d;\n", r->reg_number);
   }
   else
   {
+    r->type_val = FLOAT;
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d / ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
   return r;
 };
 
-attribute neg_attribute(attribute x)
-{
+attribute neg_attribute(attribute x){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   /* unconditionally adding integer values */
@@ -255,8 +291,7 @@ attribute neg_attribute(attribute x)
   return r;
 };
 
-attribute bool_attribute(attribute x, char* op, attribute y)
-{
+attribute bool_attribute(attribute x, char* op, attribute y){
   attribute r = new_attribute();
   r->reg_number = new_reg_num();
   r->type_val = INT;
@@ -269,10 +304,7 @@ attribute bool_attribute(attribute x, char* op, attribute y)
 
 // free registers
 // instructions du genre a = f(a) + f(b); ne marche pas (même f)
-// problem with functions without params
-// problem: decl + inst inside functin => main de plus :(
 
 //Questions
-// cast variables ???
 // what do we need to declare in .h ??
 //functions declared inside main ??

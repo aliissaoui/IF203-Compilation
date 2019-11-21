@@ -59,20 +59,20 @@ decl_list inst_list            {}
 
 // I. Declarations
 
-decl_list : decl decl_list     { verif_count++;
-                                 if (verif_count == dec_count)
-                                    printf("int main(){\n");}
+decl_list : decl decl_list     {
+                                    }
 |                              { }
 ;
 
-decl: var_decl PV              { dec_count++;}
+decl: var_decl PV              {}
 | struct_decl PV               {}
 | fun_decl                     {}
 ;
 
 // I.1. Variables
 var_decl : type vlist          {  while( !is_empty_vlist() ){
-                                    head_vlist()->reg_number = new_reg_num();
+                                    /* head_vlist()->reg_number = new_reg_num(); */
+                                    head_vlist()->type_val = $1->type_val;
                                     set_symbol_value(head_vlist()->name, head_vlist());
                                     write_type($1);
                                     printf("%s, ri%d;\n", head_vlist()->name, pop_vlist()->reg_number);}
@@ -98,9 +98,11 @@ fun : fun_head fun_body        {}
 ;
 
 fun_head : ID PO PF            { set_symbol_value($1->name, $1);
+                                 declare_func();
                                  write_func($1);
                                  }
-| ID PO params PF              {  set_symbol_value($1->name, $1);
+| ID PO params PF              {  $1->type_val = $<val>0->type_val;
+                                  set_symbol_value($1->name, $1);
                                   write_type_c($1);
                                   printf("%s( ", $1->name);
                                   $3->int_val=0;
@@ -117,6 +119,7 @@ fun_head : ID PO PF            { set_symbol_value($1->name, $1);
                                   head_fun()->reg_number = new_reg_num();
                                   set_symbol_value(head_fun()->name, head_fun());
                                   $$ = pop_fun();
+                                  printf("_.f1_");
                                   write_type_c($$);
                                   printf("%s ){\n", $$->name);
                                   declar_params($3->int_val);
@@ -133,16 +136,18 @@ params: type ID vir params     { $$ = $1;
                                  $2->type_val = $1->type_val;
                                  push_fun($2); }
 
-vlist: ID vir vlist            {  push_vlist($1);}
+vlist: ID vir vlist            {  $1->reg_number = new_reg_num();
+                                  push_vlist($1);}
 
 | ID                           {  initialize_vlist();
+                                  $1->reg_number = new_reg_num();
                                   push_vlist($1); }
 ;
 
 vir : VIR                      {}
 ;
 
-fun_body : AO block AF         {printf("}\n\n");}
+fun_body : AO block AF         {printf("_.f2_}\n\n");}
 ;
 
 // I.4. Types
@@ -197,16 +202,13 @@ exp                           {}
 
 // II.1 Affectations
 
-aff : ID EQ exp               { printf("ri%d = ri%d;\n", get_symbol_value($1->name)->reg_number, $3->reg_number);
-
-                                printf("%s = ri%d;\n", $1->name, $3->reg_number);
-                                if ( $1->type_val == INT)
-                                  printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
-                                else
-                                  printf("printf(\"%s = %%f\\n\", %s);\n", $1->name, $1->name);
-
+aff : ID EQ exp               { printf("//in aff\n");
+                                $1 = get_symbol_value($1->name);
+                                write_aff($1, $3, get_symbol_value($1->name)->reg_number);
                                 }
-| exp STAR EQ exp             {}
+| ID EQ STAR exp             { printf("//in aff pointer\n");
+                                $1 = get_symbol_value($1->name);  // I inversed EQ and STAR
+                                write_aff_p($1, $3, get_symbol_value($1->name)->reg_number);}
 ;
 
 
@@ -234,7 +236,7 @@ AO block AF                   { if ( $<val>0->_else  == 0 ) {
 
 bool_cond : PO exp PF         { $$ = $2;
                                 $$->int_val = new_label();
-                                $$ -> _else = 0;
+                                $$->_else = 0;
                                 printf("if ( !ri%d ) goto l%d;\n",
                                 $2->reg_number, $$->int_val);}
 ;
@@ -243,7 +245,7 @@ if : IF                       {}
 ;
 
 else : ELSE                   { $$ = new_attribute();
-                                $$ -> _else = 1; }
+                                $$->_else = 1; }
 ;
 
 // II.4. Iterations
@@ -313,27 +315,13 @@ exp
 
 app : ID PO args PF           { $$ = $3; }
 
-args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
+args :  arglist               { $$ = new_attribute();
+                                $$->reg_number=apply_fun_with_param(get_symbol_value(($<val>-1)->name), $<val>-1);}
 
-                                if( $$->type_val != TVOID ){
-                                  $$->reg_number = new_reg_num();
-                                  write_type_c($$);
-                                  printf("ri%d;\n", $$->reg_number);
-                                  printf("ri%d = ", $$->reg_number);
-                                }
-                                  printf("%s\( ", $<val>-1->name );
-                                  while( !last_argument_fun() ){
+|                             { $$ = new_attribute();
+                                $$->reg_number = apply_fun_without_param(get_symbol_value(($<val>-1)->name), $<val>-1);}
 
-                                    if ( strcmp(head_fun()->name,"1r") )
-                                      printf("%s, ", pop_fun()->name);
-                                    else
-                                      printf("ri%d, ", pop_fun()->reg_number);
-                                }
-                                if ( strcmp(head_fun()->name,"1r") )
-                                  printf("%s );\n", pop_fun()->name);
-                                else
-                                  printf("ri%d );\n", pop_fun()->reg_number);}
-|                             {}
+
 ;
 
 arglist : exp VIR arglist     { push_fun($1);}
