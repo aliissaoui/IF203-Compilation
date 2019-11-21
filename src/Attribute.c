@@ -77,6 +77,12 @@ int last_argument_vlist(){
   return last_argument(&vlist_stack);
 }
 
+
+
+
+
+
+
 void initialize_fun(){
   initialize_stack(&fun_stack);
 }
@@ -100,6 +106,37 @@ int is_empty_fun(){
 int last_argument_fun(){
   return last_argument(&fun_stack);
 }
+
+
+
+
+void initialize_struct(){
+  initialize_stack(&struct_stack);
+}
+
+void push_struct(attribute x){
+  push(x, &struct_stack);
+}
+
+attribute pop_struct(){
+  return pop(&struct_stack);
+}
+
+attribute head_struct(){
+  return head(&struct_stack);
+}
+
+int is_empty_struct(){
+  return is_empty(&struct_stack);
+}
+
+int last_argument_struct(){
+  return last_argument(&fun_stack);
+}
+
+
+
+
 
 // ATTRIBUTES
 attribute new_attribute(){
@@ -319,8 +356,3 @@ attribute bool_attribute(attribute x, char* op, attribute y){
 
 
 // free registers
-// instructions du genre a = f(a) + f(b); ne marche pas (même f)
-
-//Questions
-// what do we need to declare in .h ??
-//functions declared inside main ??

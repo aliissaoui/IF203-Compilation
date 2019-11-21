@@ -45,6 +45,7 @@ typedef struct STACK stack;
 
 stack vlist_stack;
 stack fun_stack;
+stack struct_stack;
 
 
 void initialize_vlist();
@@ -60,6 +61,14 @@ attribute pop_fun();
 int is_empty_fun();
 int last_argument_fun();
 attribute head_fun();
+
+void initialize_struct();
+void push_struct();
+attribute pop_struct();
+int is_empty_struct();
+int last_argument_struct();
+attribute head_struct();
+
 
 
 attribute new_attribute ();

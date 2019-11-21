@@ -43,6 +43,7 @@ int dec_count = 0, verif_count=0;
 %type <val> exp type pointer STAR vir vlist typename aff var_decl decl_list
 %type <val> cond stat bool_cond else while while_cond
 %type <val> fun_head params args app
+%type <val> attr
 
 %start prog
 
@@ -88,8 +89,14 @@ struct_decl : STRUCT ID struct {}
 struct : AO attr AF            {}
 ;
 
-attr : type ID                 {}
-| type ID PV attr              {}
+attr : type ID                 { initialize_struct();
+                                 $2->stars = $1->stars;
+                                 $2->type_val = $1->type_val;
+                                 push_struct($2);}
+| type ID PV attr              { $$ = $1;
+                                 $2->type_val = $1->type_val;
+                                 $2->stars = $1->stars;
+                                 push_struct($2);}
 
 // I.3. Functions
 
