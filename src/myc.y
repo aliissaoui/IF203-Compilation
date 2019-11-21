@@ -77,7 +77,12 @@ var_decl : type vlist          {  while( !is_empty_vlist() ){
                                     $2 -> type_val = $1->type_val;
                                     $2 -> permanent = 1;
                                     set_symbol_value($2->name, $2);
-                                    write_type($1);
+                                    if ($1->type_val != TSTRUCT){
+                                      write_type($1);
+                                    }
+                                    else {
+                                      printf("_.h_struct %s ", $1->name);
+                                    }
                                     printf("%s, ri%d;\n", $2->name, $2->reg_number);}
                                 }
 ;
@@ -161,8 +166,8 @@ params: type ID vir params     { $$ = $1;
 
 vlist: ID vir vlist            { push_vlist($1);}
 
-| ID                           {  initialize_vlist();
-                                  push_vlist($1); }
+| ID                           { initialize_vlist();
+                                 push_vlist($1); }
 ;
 
 vir : VIR                      {}
@@ -190,7 +195,10 @@ typename
 | VOID                          { $$ = new_attribute();
                                   $$->type_val = TVOID; }
 
-| STRUCT ID                     {}
+| STRUCT ID                     { $$ = new_attribute();
+                                  $$->type_val = TSTRUCT;
+                                  $$->name = $2->name;
+                                  }
 ;
 
 pointer

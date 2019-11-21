@@ -13,7 +13,7 @@
 
 #define CAPACITY 10
 
-typedef enum {INT, FLOAT, TVOID} type;
+typedef enum {INT, FLOAT, TVOID, TSTRUCT} type;
 
 struct ATTRIBUTE {
   char * name;
