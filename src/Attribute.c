@@ -131,7 +131,7 @@ int is_empty_struct(){
 }
 
 int last_argument_struct(){
-  return last_argument(&fun_stack);
+  return last_argument(&struct_stack);
 }
 
 

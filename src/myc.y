@@ -43,7 +43,7 @@ int dec_count = 0, verif_count=0;
 %type <val> exp type pointer STAR vir vlist typename aff var_decl decl_list
 %type <val> cond stat bool_cond else while while_cond
 %type <val> fun_head params args app
-%type <val> attr
+%type <val> attr struct
 
 %start prog
 
@@ -86,7 +86,17 @@ var_decl : type vlist          {  while( !is_empty_vlist() ){
 struct_decl : STRUCT ID struct {}
 ;
 
-struct : AO attr AF            {}
+struct : AO attr AF            { printf("_.h_struct %s{\n", $<val>0->name);
+                                 while( !is_empty_struct() ){
+                                    $2->int_val++;
+                                    head_struct()->reg_number = new_reg_num();
+                                    set_symbol_value(head_struct()->name, head_struct());
+                                    $$ = pop_struct();
+                                    printf("  ");
+                                    write_type($$);
+                                    printf("%s;\n", $$->name);
+                                  }
+                                printf("_.h_};\n");}
 ;
 
 attr : type ID                 { initialize_struct();
