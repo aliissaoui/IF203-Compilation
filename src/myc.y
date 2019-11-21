@@ -13,12 +13,12 @@ extern int yyparse();
 
 void yyerror (char* s) {
   printf ("%s\n",s);
-} 
+}
 int dec_count = 0, verif_count=0;
 
 %}
 
-%union { 
+%union {
 	attribute val;
 }
 %token <val> NUMI NUMF
@@ -33,18 +33,18 @@ int dec_count = 0, verif_count=0;
 %token DOT ARR
 
 %left DIFF EQUAL SUP INF       // low priority on comparison
-%left PLUS MOINS               // higher priority on + - 
+%left PLUS MOINS               // higher priority on + -
 %left STAR DIV                 // higher priority on * /
 %left OR                       // higher priority on ||
 %left AND                      // higher priority on &&
-%left DOT ARR                  // higher priority on . and -> 
+%left DOT ARR                  // higher priority on . and ->
 %nonassoc UNA                  // highest priority on unary operator
- 
+
 %type <val> exp type pointer STAR vir vlist typename aff var_decl decl_list
 %type <val> cond stat bool_cond else while while_cond
 %type <val> fun_head params args app
 
-%start prog  
+%start prog
 
 
 %%
@@ -198,9 +198,9 @@ exp                           {}
 // II.1 Affectations
 
 aff : ID EQ exp               { printf("ri%d = ri%d;\n", get_symbol_value($1->name)->reg_number, $3->reg_number);
-                                
+
                                 printf("%s = ri%d;\n", $1->name, $3->reg_number);
-                                if ( $1->type_val == INT) 
+                                if ( $1->type_val == INT)
                                   printf("printf(\"%s = %%d\\n\", %s);\n", $1->name, $1->name);
                                 else
                                   printf("printf(\"%s = %%f\\n\", %s);\n", $1->name, $1->name);
@@ -228,14 +228,14 @@ AO block AF                   { if ( $<val>0->_else  == 0 ) {
                                   $$->int_val = new_label();
                                   printf("goto l%d;\nl%d:;\n", $$->int_val, $<val>0->int_val);
                                 }
-                              }   
+                              }
 ;
 
 
 bool_cond : PO exp PF         { $$ = $2;
                                 $$->int_val = new_label();
                                 $$ -> _else = 0;
-                                printf("if ( !ri%d ) goto l%d;\n", 
+                                printf("if ( !ri%d ) goto l%d;\n",
                                 $2->reg_number, $$->int_val);}
 ;
 
@@ -251,13 +251,13 @@ else : ELSE                   { $$ = new_attribute();
 loop : while while_cond inst  { printf("goto l%d;\nl%d:\n", $1->int_val, $2->int_val);}
 ;
 
-while_cond : PO exp PF        { $$ = $2;                   
+while_cond : PO exp PF        { $$ = $2;
                                 $$ -> int_val = new_label();
                                 printf("if ( !ri%d ) goto l%d;\n", $$->reg_number, $$->int_val ); }
 
 
 while : WHILE                 { $$ = new_attribute();
-                                $$->int_val = new_label(); 
+                                $$->int_val = new_label();
                                 printf("l%d:;\n", $$->int_val);}
 ;
 
@@ -266,13 +266,13 @@ exp
 // II.3.0 Exp. arithmetiques
 : MOINS exp %prec UNA         {}
 
-| exp PLUS exp                { $$=plus_attribute($1,$3); }
-| exp MOINS exp               { $$=minus_attribute($1,$3); }
-| exp STAR exp                { $$=mult_attribute($1,$3); }
-| exp DIV exp                 { $$=div_attribute($1,$3); }
+| exp PLUS exp                { $$ = plus_attribute($1,$3); }
+| exp MOINS exp               { $$ = minus_attribute($1,$3); }
+| exp STAR exp                { $$ = mult_attribute($1,$3); }
+| exp DIV exp                 { $$ = div_attribute($1,$3); }
 
 | PO exp PF                   { $$ = $2; }
-                                
+
 | ID                          { $$ = get_symbol_value($1->name);}
 
 | NUMI                        { $$ = $1;
@@ -314,8 +314,8 @@ exp
 app : ID PO args PF           { $$ = $3; }
 
 args :  arglist               { $$ = get_symbol_value(($<val>-1)->name);
-        
-                                if( $$->type_val != VOID ){
+
+                                if( $$->type_val != TVOID ){
                                   $$->reg_number = new_reg_num();
                                   write_type_c($$);
                                   printf("ri%d;\n", $$->reg_number);
@@ -346,5 +346,4 @@ int main () {
 
   return yyparse ();
 
-} 
-
+}

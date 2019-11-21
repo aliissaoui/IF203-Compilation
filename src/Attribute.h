@@ -11,7 +11,7 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#define SIZE 15
+#define CAPACITY 10
 
 typedef enum {INT, FLOAT, TVOID} type;
 
@@ -21,8 +21,8 @@ struct ATTRIBUTE {
   float float_val;
   type type_val;
   int reg_number;
-  
-  /* other attribute's fields can goes here */ 
+
+  /* other attribute's fields can goes here */
   int _else;
   int stars;
 
@@ -32,10 +32,11 @@ typedef struct ATTRIBUTE * attribute;
 
 
 
-struct STACK 
+struct STACK
 {
-  attribute tab[SIZE];
+  attribute *tab;
   int head;
+  int capacity;
 };
 
 typedef struct STACK stack;
@@ -78,4 +79,3 @@ attribute neg_attribute(attribute x);
 attribute bool_attribute(attribute x, char* op, attribute y);
 
 #endif
-

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 int reg_count = 0;
 int label_count = 0;
@@ -10,12 +11,24 @@ int label_count = 0;
 void initialize_stack(stack *s)
 {
   s->head = 0;
+  s->capacity = CAPACITY;
+  s->tab = malloc(sizeof(attribute)*CAPACITY);
+  assert( s->tab != NULL );
+
 }
 
 void push(attribute x, stack *s)
 {
-  s->head++;
-  s->tab[s->head] = x;
+  if ( s->head < s->capacity ){
+    s->head++;
+    s->tab[s->head] = x;
+  }
+  else {
+    s->tab = realloc( s->tab, sizeof(attribute)*CAPACITY*2);
+    assert( s->tab != NULL );
+    s->head++;
+    s->tab[s->head] = x;
+  }
 }
 
 attribute pop(stack *s)
