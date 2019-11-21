@@ -25,6 +25,7 @@ struct ATTRIBUTE {
   /* other attribute's fields can goes here */
   int _else;
   int stars;
+  int permanent;
 
 };
 

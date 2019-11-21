@@ -74,6 +74,7 @@ var_decl : type vlist          {  while( !is_empty_vlist() ){
                                     $2 = pop_vlist();
                                     $2 -> reg_number = new_reg_num();
                                     $2 -> type_val = $1->type_val;
+                                    $2 -> permanent = 1;
                                     set_symbol_value($2->name, $2);
                                     write_type($1);
                                     printf("%s, ri%d;\n", $2->name, $2->reg_number);}
@@ -98,11 +99,13 @@ fun_decl : type fun            {finish_func();} // to go back to the backup symb
 fun : fun_head fun_body        {}
 ;
 
-fun_head : ID PO PF            { set_symbol_value($1->name, $1);
+fun_head : ID PO PF            { $1 -> permanent = 1;
+                                 set_symbol_value($1->name, $1);
                                  declare_func();
                                  write_func($1);
                                  }
 | ID PO params PF              {  $1->type_val = $<val>0->type_val;
+                                  $1 -> permanent = 1;
                                   set_symbol_value($1->name, $1);
                                   write_type_c($1);
                                   printf("%s( ", $1->name);
@@ -111,6 +114,7 @@ fun_head : ID PO PF            { set_symbol_value($1->name, $1);
                                   while( !last_argument_fun() ){
                                     $3->int_val++;
                                     head_fun()->reg_number = new_reg_num();
+                                    head_fun()->permanent = 1;
                                     set_symbol_value(head_fun()->name, head_fun());
                                     $$ = pop_fun();
                                     write_type_c($$);
@@ -118,6 +122,7 @@ fun_head : ID PO PF            { set_symbol_value($1->name, $1);
                                   }
                                   $3->int_val++;
                                   head_fun()->reg_number = new_reg_num();
+                                  head_fun()->permanent = 1;
                                   set_symbol_value(head_fun()->name, head_fun());
                                   $$ = pop_fun();
                                   printf("_.f1_");

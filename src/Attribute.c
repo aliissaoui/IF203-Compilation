@@ -107,8 +107,18 @@ attribute new_attribute(){
   r = malloc(sizeof(struct ATTRIBUTE));
   r->stars = 0;
   r->name = "1r";
+  r->permanent = 0;
   return r;
 };
+
+void cond_free2( attribute x, attribute y){
+  if ( !x->permanent ){
+    free(x);
+  }
+  if ( !y->permanent ){
+    free(y);
+  }
+}
 
 int new_reg_num(){
   return reg_count++;
@@ -219,6 +229,7 @@ attribute plus_attribute(attribute x, attribute y){
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d + ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
+  cond_free2(x,y);
   return r;
 };
 
@@ -237,8 +248,8 @@ attribute mult_attribute(attribute x, attribute y){
     r->type_val = FLOAT;
     printf("\nfloat ri%d;\n", r->reg_number);
   }
-
   printf("ri%d = ri%d * ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
+  cond_free2(x,y);
   return r;
 };
 
@@ -258,6 +269,7 @@ attribute minus_attribute(attribute x, attribute y){
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d - ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
+  cond_free2(x,y);
   return r;
 };
 
@@ -277,6 +289,7 @@ attribute div_attribute(attribute x, attribute y){
     printf("\nfloat ri%d;\n", r->reg_number);
   }
   printf("ri%d = ri%d / ri%d;\n", r->reg_number, x->reg_number, y->reg_number);
+  cond_free2(x,y);
   return r;
 };
 
@@ -288,6 +301,9 @@ attribute neg_attribute(attribute x){
   write_type_c(r);
   printf("ri%d;\n", r->reg_number);
   printf("ri%d = - ri%d", r->reg_number, x->reg_number);
+  if ( !x->permanent ){
+    free(x);
+  }
   return r;
 };
 
