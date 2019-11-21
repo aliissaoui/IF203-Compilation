@@ -334,8 +334,8 @@ exp
 
 // II.3.3. Structures
 
-| exp ARR ID                  {}
-| exp DOT ID                  {}
+| exp ARR ID                  {printf("%s->%s",$1->name,$3->name);}
+| exp DOT ID                  {printf("%s.%s",$1->name,$3->name);}
 
 | app                         { $$ = $1; }
 ;
