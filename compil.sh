@@ -43,7 +43,6 @@ echo "
 int main(){" >> $file.c
 grep -v _.h_ tmp2.txt | grep -v _.f1_  >> $file.c
 
-
 echo "
 return 0;
 }" >> $file.c
