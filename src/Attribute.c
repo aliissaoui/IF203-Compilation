@@ -232,7 +232,6 @@ int apply_fun_with_param( attribute r, attribute back){
     printf("%s );\n", pop_fun()->name);
   else
     printf("ri%d );\n", pop_fun()->reg_number);
-  printf("//returning :%d\n", r->reg_number);
   int n = r->reg_number;
   free(r);
   return n;

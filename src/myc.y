@@ -231,13 +231,14 @@ exp                           {}
 
 // II.1 Affectations
 
-aff : ID EQ exp               { printf("//in aff\n");
+aff : ID EQ exp               {
                                 $1 = get_symbol_value($1->name);
                                 write_aff($1, $3, get_symbol_value($1->name)->reg_number);
                                 }
-| ID EQ STAR exp             { printf("//in aff pointer\n");
+| ID EQ STAR exp             {
                                 $1 = get_symbol_value($1->name);  // I inversed EQ and STAR
                                 write_aff_p($1, $3, get_symbol_value($1->name)->reg_number);}
+// | add exp EQ exp ( for struct )
 ;
 
 
