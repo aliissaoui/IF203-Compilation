@@ -48,5 +48,5 @@ return 0;
 }" >> $file.c
 echo "
 #endif" >> $file.h
-rm tmp2.txt tmp.txt
-gcc $file.c -o $file
+
+gcc $file.c -o tst/test

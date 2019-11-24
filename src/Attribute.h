@@ -22,7 +22,7 @@ struct ATTRIBUTE {
   type type_val;
   int reg_number;
 
-  /* other attribute's fields can goes here */
+  /* other attribute's fields can go here */
   int _else;
   int stars;
   int permanent;

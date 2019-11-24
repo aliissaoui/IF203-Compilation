@@ -19,13 +19,17 @@ In This project you will find two folders and a script 'compil.sh':
 - you can use the command:
         ./compil.sh tst/file.myc
 
-this command will create tree files in tst/ : file.c and file.h file
-file is the executable automatically generated with gcc compilation of file.c
+this command will create tree files in tst/ : file.c and file.h test
+"test" is the executable automatically generated with gcc compilation of file.c
 
-- You can only compile the compiler using the commande make.
+- You can compile the compiler using the commande make.
 
 - You can delete unnecessary files, and created ones with the command 'make clean'.
 
-NB: you can use any file name . myc, the code generated and executable with have the same name.
+NB: you can use any file name .myc, the code generated and the executable named test.
 Example:
-        ./compil.sh tst/toto.myc => tst/toto.c + tst/toto.h + tst/toto
+        
+        compilation:
+                ./compil.sh tst/toto.myc => tst/toto.c + tst/toto.h + tst/test  
+        Execution:
+                ./tst/test
