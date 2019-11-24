@@ -24,7 +24,9 @@ do
                 i=1;;
        *_.f2_*) printf "_.f1_%s\n" "${line:5}";
                 i=0;;
-       *)  if [ $i -eq 1 ]; then
+       *)  if [ $i -eq 1 -a "${line:0:4}" == "_.h_" ]; then
+                printf "_.f1_%s\n" "${line:4}"
+            elif [ $i -eq 1 -a "${line:0:4}" != "_.h_" ]; then
                 printf "_.f1_%s\n" "$line"
             else
                 printf "%s\n" "$line"
